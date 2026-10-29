@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DE-SPEC MISSION CONTROL // EXECUTIVE DASHBOARD 2566 vs 2569</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt (Thai/Display), Inter (UI), JetBrains Mono (Telemetry/Numbers) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            950: '#050608',
+                            900: '#0a0d12',
+                            800: '#0f131a',
+                            700: '#161c26',
+                            600: '#212938',
+                        },
+                        telemetry: {
+                            cyan: '#00f0ff',
+                            blue: '#2563eb',
+                            amber: '#f59e0b',
+                            green: '#10b981',
+                            red: '#ef4444',
+                            purple: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Prompt', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-canvas: #050608;
+            --bg-card: rgba(15, 19, 26, 0.88);
+            --bg-subcard: rgba(5, 6, 8, 0.85);
+            --border-subtle: rgba(255, 255, 255, 0.12);
+            --text-main: #f0f6fc;
+            --text-muted: #94a3b8;
+            --accent-primary: #00f0ff;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+        }
+
+        body {
+            background-color: #050608;
+            color: #f0f6fc;
+            font-family: 'Prompt', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+        }
+
+        /* SpaceX Telemetry Card Styling */
+        .spacex-card {
+            background: rgba(15, 19, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            position: relative;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .spacex-card:hover {
+            border-color: rgba(0, 240, 255, 0.35);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.06);
+        }
+
+        /* Corner Reticles */
+        .corner-reticle::before,
+        .corner-reticle::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: #00f0ff;
+            pointer-events: none;
+            opacity: 0.7;
+            transition: opacity 0.25s ease;
+        }
+        .corner-reticle::before {
+            top: -1px;
+            left: -1px;
+            border-top: 2px solid #00f0ff;
+            border-left: 2px solid #00f0ff;
+        }
+        .corner-reticle::after {
+            bottom: -1px;
+            right: -1px;
+            border-bottom: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+        }
+
+        /* =========================================================
+           THEME 2: GOOGLE WORKSPACE MATERIAL 3 (CLEAN EXECUTIVE LIGHT)
+           ========================================================= */
+        body.theme-workspace {
+            background-color: #F8FAFD !important;
+            color: #1F1F1F !important;
+            background-image: radial-gradient(circle at 0% 0%, rgba(26, 115, 232, 0.04) 0%, transparent 50%),
+                              radial-gradient(circle at 100% 0%, rgba(30, 142, 62, 0.03) 0%, transparent 40%) !important;
+        }
+
+        /* Google 4-color top bar indicator */
+        .google-top-ribbon {
+            display: none;
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #4285F4 0%, #4285F4 25%, #EA4335 25%, #EA4335 50%, #FBBC05 50%, #FBBC05 75%, #34A853 75%, #34A853 100%);
+        }
+        body.theme-workspace .google-top-ribbon {
+            display: block;
+        }
+
+        body.theme-workspace header {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-bottom: 1px solid #DADCE0 !important;
+            box-shadow: 0 1px 3px rgba(60, 64, 67, 0.08);
+        }
+
+        body.theme-workspace footer {
+            background-color: #FFFFFF !important;
+            border-top: 1px solid #DADCE0 !important;
+        }
+
+        body.theme-workspace .spacex-card {
+            background: #FFFFFF !important;
+            backdrop-filter: none !important;
+            border: 1px solid #DADCE0 !important;
+            border-radius: 16px !important;
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.08), 0 2px 6px 2px rgba(60, 64, 67, 0.04) !important;
+        }
+
+        body.theme-workspace .spacex-card:hover {
+            border-color: #AECBFA !important;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.1) !important;
+        }
+
+        /* Hide SpaceX HUD reticles in Google Workspace mode */
+        body.theme-workspace .corner-reticle::before,
+        body.theme-workspace .corner-reticle::after {
+            opacity: 0 !important;
+        }
+
+        /* Surface & Container Overrides for Google Workspace */
+        body.theme-workspace .bg-space-950,
+        body.theme-workspace .bg-space-950\/90,
+        body.theme-workspace .bg-space-950\/80,
+        body.theme-workspace .bg-space-950\/70,
+        body.theme-workspace .bg-space-950\/60,
+        body.theme-workspace .bg-space-900,
+        body.theme-workspace .bg-space-900\/40,
+        body.theme-workspace .bg-space-800,
+        body.theme-workspace .bg-space-800\/90,
+        body.theme-workspace .bg-space-800\/80 {
+            background-color: #F8FAFD !important;
+            border-color: #DADCE0 !important;
+        }
+
+        body.theme-workspace .bg-white\/5,
+        body.theme-workspace .bg-white\/10 {
+            background-color: #F1F3F4 !important;
+        }
+
+        body.theme-workspace .hover\:bg-white\/10:hover,
+        body.theme-workspace .hover\:bg-white\/\[0\.03\]:hover {
+            background-color: #E8F0FE !important;
+        }
+
+        /* Typography Overrides for Google Workspace */
+        body.theme-workspace .text-white {
+            color: #1F1F1F !important;
+        }
+        body.theme-workspace .text-slate-200,
+        body.theme-workspace .text-slate-300 {
+            color: #3C4043 !important;
+        }
+        body.theme-workspace .text-slate-400,
+        body.theme-workspace .text-slate-500 {
+            color: #5F6368 !important;
+        }
+
+        /* Accent Color Adaptation (SpaceX Neon -> Google Material 3 Authentic) */
+        body.theme-workspace .text-telemetry-cyan {
+            color: #1A73E8 !important;
+        }
+        body.theme-workspace .text-telemetry-green {
+            color: #1E8E3E !important;
+        }
+        body.theme-workspace .text-telemetry-amber {
+            color: #E37400 !important;
+        }
+        body.theme-workspace .text-telemetry-red {
+            color: #D93025 !important;
+        }
+        body.theme-workspace .text-telemetry-purple {
+            color: #8430CE !important;
+        }
+
+        /* Accent Backgrounds & Pills */
+        body.theme-workspace .bg-telemetry-cyan {
+            background-color: #1A73E8 !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+        }
+        body.theme-workspace .bg-telemetry-cyan\/10,
+        body.theme-workspace .bg-telemetry-cyan\/15,
+        body.theme-workspace .bg-telemetry-cyan\/20,
+        body.theme-workspace .bg-telemetry-blue\/10 {
+            background-color: #E8F0FE !important;
+            border-color: #D2E3FC !important;
+        }
+        body.theme-workspace .bg-telemetry-green\/15,
+        body.theme-workspace .bg-telemetry-green\/20 {
+            background-color: #E6F4EA !important;
+            border-color: #CEEAD6 !important;
+        }
+        body.theme-workspace .bg-telemetry-amber\/10,
+        body.theme-workspace .bg-telemetry-amber\/15,
+        body.theme-workspace .bg-telemetry-amber\/20 {
+            background-color: #FEF7E0 !important;
+            border-color: #FEEFC3 !important;
+        }
+        body.theme-workspace .bg-telemetry-red\/15 {
+            background-color: #FCE8E6 !important;
+            border-color: #FAD2CF !important;
+        }
+
+        /* Borders & Dividers in Google Workspace */
+        body.theme-workspace .border-white\/5,
+        body.theme-workspace .border-white\/10,
+        body.theme-workspace .border-white\/15,
+        body.theme-workspace .border-white\/20 {
+            border-color: #DADCE0 !important;
+        }
+        body.theme-workspace .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+            border-color: #E8EAED !important;
+        }
+        body.theme-workspace .border-telemetry-cyan\/30,
+        body.theme-workspace .border-telemetry-cyan\/40,
+        body.theme-workspace .border-telemetry-cyan\/50,
+        body.theme-workspace .border-telemetry-cyan\/60 {
+            border-color: #8AB4F8 !important;
+        }
+        body.theme-workspace .border-l-telemetry-cyan {
+            border-left-color: #1A73E8 !important;
+        }
+        body.theme-workspace .border-l-telemetry-purple {
+            border-left-color: #8430CE !important;
+        }
+
+        /* Navigation Tabs in Google Workspace */
+        body.theme-workspace .tab-btn {
+            background: #FFFFFF !important;
+            border: 1px solid #DADCE0 !important;
+            border-radius: 14px !important;
+            color: #5F6368 !important;
+            box-shadow: 0 1px 2px rgba(60, 64, 67, 0.05);
+        }
+        body.theme-workspace .tab-btn:hover {
+            background: #F8FAFD !important;
+            border-color: #1A73E8 !important;
+        }
+        body.theme-workspace .tab-btn.active {
+            background: #E8F0FE !important;
+            border: 1.5px solid #1A73E8 !important;
+            color: #1967D2 !important;
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.14) !important;
+        }
+        body.theme-workspace .tab-btn.active .text-white {
+            color: #174EA6 !important;
+        }
+
+        /* Form Inputs & Selects in Google Workspace */
+        body.theme-workspace select,
+        body.theme-workspace input[type="number"] {
+            background-color: #FFFFFF !important;
+            border: 1px solid #DADCE0 !important;
+            color: #1F1F1F !important;
+            border-radius: 8px !important;
+        }
+        body.theme-workspace select:focus,
+        body.theme-workspace input[type="number"]:focus {
+            border-color: #1A73E8 !important;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2) !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050608;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #212938;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+
+        /* Glowing Pulse */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.45; transform: scale(0.95); }
+        }
+        .animate-telemetry {
+            animation: pulse-glow 2.2s infinite ease-in-out;
+        }
+
+        /* Tab active indicator */
+        .tab-btn.active {
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.14) 0%, rgba(0, 240, 255, 0.03) 100%);
+            border-color: #00f0ff;
+            color: #ffffff;
+            box-shadow: 0 4px 20px -2px rgba(0, 240, 255, 0.2);
+        }
+
+        /* Segmented Theme Pill Switcher */
+        .theme-switcher-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px;
+            border-radius: 9999px;
+            background: rgba(15, 19, 26, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        body.theme-workspace .theme-switcher-pill {
+            background: #F1F3F4;
+            border: 1px solid #DADCE0;
+        }
+        .theme-option-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .theme-option-btn.active-spacex {
+            background: #00f0ff;
+            color: #050608;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+        }
+        .theme-option-btn.active-workspace {
+            background: #FFFFFF;
+            color: #1A73E8;
+            box-shadow: 0 1px 3px rgba(60, 64, 67, 0.25);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-telemetry-cyan selection:text-black">
+
+    <!-- GOOGLE WORKSPACE 4-COLOR ACCENT BAR (Visible in Google Workspace Theme) -->
+    <div class="google-top-ribbon sticky top-0 z-50"></div>
+
+    <!-- TOP MISSION CONTROL / GOOGLE WORKSPACE BAR -->
+    <header class="sticky top-0 z-50 border-b border-white/15 bg-space-950/90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <!-- Left Brand & Title -->
+                <div class="flex items-start sm:items-center gap-3.5">
+                    <div id="brand-icon-box" class="w-10 h-10 rounded-lg bg-telemetry-cyan/10 border border-telemetry-cyan/40 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                        <i data-lucide="cpu" class="w-5 h-5 text-telemetry-cyan"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span id="header-badge-mode" class="font-mono text-xs uppercase tracking-[0.18em] text-telemetry-cyan font-semibold">DE-SPEC MISSION CONTROL</span>
+                            <span class="text-slate-400">//</span>
+                            <span id="header-sub-badge" class="font-mono text-xs text-slate-400">EXECUTIVE TELEMETRY v2569.4</span>
+                        </div>
+                        <h1 class="text-base sm:text-lg font-semibold text-white tracking-tight mt-0.5">
+                            แดชบอร์ดเปรียบเทียบเกณฑ์ราคากลางและคุณลักษณะครุภัณฑ์คอมพิวเตอร์ พ.ศ. 2566 vs พ.ศ. 2569
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Right Theme Switcher & Action Controls -->
+                <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+                    <!-- PROMINENT SEGMENTED THEME TOGGLE -->
+                    <div class="theme-switcher-pill" role="group" aria-label="สลับธีมหน้าเว็บ">
+                        <button onclick="setTheme('spacex')" id="theme-btn-spacex" class="theme-option-btn active-spacex" title="ธีม SpaceX Mission Control (กด T เพื่อสลับ)">
+                            <span>🚀 SpaceX Dark</span>
+                        </button>
+                        <button onclick="setTheme('workspace')" id="theme-btn-workspace" class="theme-option-btn text-slate-400 hover:text-white" title="ธีม Google Workspace Material 3 (กด T เพื่อสลับ)">
+                            <span class="inline-flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-[#4285F4]"></span>
+                                <span class="w-2 h-2 rounded-full bg-[#34A853] -ml-1"></span>
+                                <span>✦ Google Workspace</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="hidden sm:flex px-3 py-1.5 rounded-full bg-space-800 border border-white/10 items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-telemetry-green animate-telemetry"></span>
+                        <span class="font-mono text-xs text-slate-300">BENCHMARK: <strong class="text-white">ADVICE / JIB</strong></span>
+                    </div>
+
+                    <button onclick="openExecutiveBriefModal()" class="px-3.5 py-1.5 rounded-full bg-telemetry-cyan/15 hover:bg-telemetry-cyan/25 border border-telemetry-cyan/50 text-telemetry-cyan font-mono text-xs font-medium flex items-center gap-1.5 transition">
+                        <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+                        สรุปผู้บริหาร (EXEC BRIEF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- EXECUTIVE KPI SUMMARY CARDS (4 METRICS) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- KPI 1 -->
+            <div class="spacex-card corner-reticle rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="font-mono text-xs uppercase tracking-wider text-slate-400">01 // งบประมาณต่อเครื่องเพิ่มขึ้น</span>
+                    <i data-lucide="trending-up" class="w-4 h-4 text-telemetry-cyan"></i>
+                </div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-mono text-2xl font-bold text-white">+20.8%</span>
+                    <span class="font-mono text-sm text-telemetry-cyan">/ +16.7%</span>
+                </div>
+                <p class="mt-1.5 text-xs text-slate-300 leading-relaxed">
+                    <strong class="text-white">AIO:</strong> 24,000 → <span class="text-telemetry-cyan font-mono">29,000฿</span> (+5,000)<br>
+                    <strong class="text-white">Notebook:</strong> 24,000 → <span class="text-telemetry-cyan font-mono">28,000฿</span> (+4,000)
+                </p>
+            </div>
+
+            <!-- KPI 2 -->
+            <div class="spacex-card corner-reticle rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="font-mono text-xs uppercase tracking-wider text-slate-400">02 // เพดานคะแนนเทคนิคใหม่</span>
+                    <i data-lucide="sliders" class="w-4 h-4 text-telemetry-green"></i>
+                </div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-mono text-2xl font-bold text-white">20 → 30</span>
+                    <span class="font-mono text-xs px-2 py-0.5 rounded bg-telemetry-green/15 text-telemetry-green border border-telemetry-green/30">+50% WEIGHT</span>
+                </div>
+                <p class="mt-1.5 text-xs text-slate-300 leading-relaxed">
+                    ปรับเพิ่มน้ำหนักคะแนนทั้ง AIO และ Notebook เป็น <strong class="text-white">30 คะแนน</strong> โดยดึง <strong class="text-telemetry-green">RAM (16/24/32GB)</strong> มาเป็นเกณฑ์ให้คะแนนหลัก
+                </p>
+            </div>
+
+            <!-- KPI 3 -->
+            <div class="spacex-card corner-reticle rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="font-mono text-xs uppercase tracking-wider text-slate-400">03 // ยกระดับสเปคฐาน (0 คะแนน)</span>
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-telemetry-amber"></i>
+                </div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-mono text-xl font-bold text-white">8C / 16GB / 1TB</span>
+                </div>
+                <p class="mt-1.5 text-xs text-slate-300 leading-relaxed">
+                    เกณฑ์ปี 69 ขยับฐานเริ่มต้นสูงขึ้นมาก: บังคับ <strong class="text-white">SSD 1TB</strong> (เดิม 512GB) และ <strong class="text-telemetry-amber">CPU ปี ≥ 2025</strong> จึงจะได้คะแนน Launch Date
+                </p>
+            </div>
+
+            <!-- KPI 4 -->
+            <div class="spacex-card corner-reticle rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="font-mono text-xs uppercase tracking-wider text-slate-400">04 // ดัชนีเทียบราคาตลาด (JIB/ADVICE)</span>
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-telemetry-red"></i>
+                </div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-mono text-lg font-bold text-telemetry-amber">GAP ALERT: OLED/1TB</span>
+                </div>
+                <p class="mt-1.5 text-xs text-slate-300 leading-relaxed">
+                    โน้ตบุ๊กจอ <strong class="text-white">16" OLED + SSD 1TB</strong> ราคาปลีกอยู่ที่ <span class="font-mono text-telemetry-amber">31,990-34,990฿</span> (สูงกว่าราคากลาง 28,000฿ ต้องใช้ราคา B2B CTO)
+                </p>
+            </div>
+        </section>
+
+        <!-- NAVIGATION TABS (4 MODULES) -->
+        <nav class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <button onclick="switchTab('tab-budget')" id="btn-tab-budget" class="tab-btn active rounded-lg p-3.5 border border-white/15 bg-space-800/80 text-left transition flex items-center gap-3">
+                <div class="w-9 h-9 rounded bg-white/5 flex items-center justify-center shrink-0">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-telemetry-cyan"></i>
+                </div>
+                <div>
+                    <div class="font-mono text-[11px] text-telemetry-cyan uppercase">MODULE 01</div>
+                    <div class="text-sm font-semibold text-white">เปรียบเทียบราคากลาง 7 รายการ</div>
+                </div>
+            </button>
+
+            <button onclick="switchTab('tab-spec')" id="btn-tab-spec" class="tab-btn rounded-lg p-3.5 border border-white/15 bg-space-800/80 text-left transition flex items-center gap-3 text-slate-300 hover:text-white">
+                <div class="w-9 h-9 rounded bg-white/5 flex items-center justify-center shrink-0">
+                    <i data-lucide="layers" class="w-5 h-5 text-telemetry-green"></i>
+                </div>
+                <div>
+                    <div class="font-mono text-[11px] text-slate-400 uppercase">MODULE 02</div>
+                    <div class="text-sm font-semibold">วิเคราะห์เกณฑ์คะแนน DE66 vs DE69</div>
+                </div>
+            </button>
+
+            <button onclick="switchTab('tab-sim')" id="btn-tab-sim" class="tab-btn rounded-lg p-3.5 border border-white/15 bg-space-800/80 text-left transition flex items-center gap-3 text-slate-300 hover:text-white">
+                <div class="w-9 h-9 rounded bg-white/5 flex items-center justify-center shrink-0">
+                    <i data-lucide="gauge" class="w-5 h-5 text-telemetry-amber"></i>
+                </div>
+                <div>
+                    <div class="font-mono text-[11px] text-slate-400 uppercase">MODULE 03</div>
+                    <div class="text-sm font-semibold">จำลองคำนวณคะแนน TOR (Simulator)</div>
+                </div>
+            </button>
+
+            <button onclick="switchTab('tab-market')" id="btn-tab-market" class="tab-btn rounded-lg p-3.5 border border-white/15 bg-space-800/80 text-left transition flex items-center gap-3 text-slate-300 hover:text-white">
+                <div class="w-9 h-9 rounded bg-white/5 flex items-center justify-center shrink-0">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-telemetry-purple"></i>
+                </div>
+                <div>
+                    <div class="font-mono text-[11px] text-slate-400 uppercase">MODULE 04</div>
+                    <div class="text-sm font-semibold">เทียบสเปคตลาด Advice / JIB</div>
+                </div>
+            </button>
+        </nav>
+
+        <!-- ==========================================
+             TAB 1: BUDGET & PRICE MATRIX (7 ITEMS)
+             ========================================== -->
+        <section id="tab-budget" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left 2 Columns: Full 7-Item Comparison Table -->
+                <div class="lg:col-span-2 spacex-card rounded-lg p-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
+                        <div>
+                            <span class="font-mono text-xs text-telemetry-cyan uppercase">STANDARD PRICE MATRIX // B.E. 2566 vs B.E. 2569</span>
+                            <h2 class="text-lg font-semibold text-white">ตารางเปรียบเทียบราคากลางครุภัณฑ์คอมพิวเตอร์ 7 รายการหลัก</h2>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-white/5 border border-white/10 font-mono text-xs text-slate-300 self-start">
+                            หน่วย: บาท (รวมภาษีมูลค่าเพิ่ม)
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/15 font-mono text-xs text-slate-400 uppercase">
+                                    <th class="py-3 px-2">ลำดับ</th>
+                                    <th class="py-3 px-3">รายการครุภัณฑ์ (ตามเอกสารแนบ)</th>
+                                    <th class="py-3 px-3 text-right">ราคาเก่า DE 66</th>
+                                    <th class="py-3 px-3 text-right text-telemetry-cyan">ราคาใหม่ DE 69</th>
+                                    <th class="py-3 px-3 text-right">ส่วนต่าง (บาท)</th>
+                                    <th class="py-3 px-2 text-right">% เปลี่ยนแปลง</th>
+                                </tr>
+                            </thead>
+                            <tbody id="price-matrix-tbody" class="divide-y divide-white/10 text-sm">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Visual Bar Comparison -->
+                    <div class="mt-6 pt-5 border-t border-white/10">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-mono text-xs text-slate-400 uppercase">VISUAL TELEMETRY // 4 รายการที่มีการปรับเพิ่มเพดานราคากลาง</span>
+                            <div class="flex items-center gap-4 text-xs font-mono">
+                                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-slate-500 inline-block"></span> ปี 2566</span>
+                                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-telemetry-cyan inline-block"></span> ปี 2569</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3.5">
+                            <!-- Bar 1 -->
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-200 font-medium">1. เครื่องคอมพิวเตอร์ All in one สำหรับงานประมวลผล</span>
+                                    <span class="font-mono text-telemetry-cyan font-semibold">24,000 → 29,000 บาท (+20.83%)</span>
+                                </div>
+                                <div class="w-full bg-space-950 rounded h-5 p-0.5 border border-white/10 flex flex-col justify-center gap-0.5">
+                                    <div class="bg-slate-400 h-1.5 rounded-sm" style="width: 72%"></div>
+                                    <div class="bg-telemetry-cyan h-1.5 rounded-sm" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <!-- Bar 2 -->
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-200 font-medium">2. เครื่องคอมพิวเตอร์โน้ตบุ๊ก สำหรับงานประมวลผล</span>
+                                    <span class="font-mono text-telemetry-cyan font-semibold">24,000 → 28,000 บาท (+16.67%)</span>
+                                </div>
+                                <div class="w-full bg-space-950 rounded h-5 p-0.5 border border-white/10 flex flex-col justify-center gap-0.5">
+                                    <div class="bg-slate-400 h-1.5 rounded-sm" style="width: 72%"></div>
+                                    <div class="bg-telemetry-cyan h-1.5 rounded-sm" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <!-- Bar 3 -->
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-200 font-medium">3. ชุดโปรแกรมระบบปฏิบัติการ (OS)</span>
+                                    <span class="font-mono text-telemetry-amber font-semibold">4,200 → 5,500 บาท (+30.95%)</span>
+                                </div>
+                                <div class="w-full bg-space-950 rounded h-5 p-0.5 border border-white/10 flex flex-col justify-center gap-0.5">
+                                    <div class="bg-slate-400 h-1.5 rounded-sm" style="width: 42%"></div>
+                                    <div class="bg-telemetry-amber h-1.5 rounded-sm" style="width: 55%"></div>
+                                </div>
+                            </div>
+                            <!-- Bar 4 -->
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-200 font-medium">4. ชุดโปรแกรมจัดการสำนักงาน แบบที่ 1 (Office)</span>
+                                    <span class="font-mono text-telemetry-green font-semibold">16,000 → 18,500 บาท (+15.63%)</span>
+                                </div>
+                                <div class="w-full bg-space-950 rounded h-5 p-0.5 border border-white/10 flex flex-col justify-center gap-0.5">
+                                    <div class="bg-slate-400 h-1.5 rounded-sm" style="width: 64%"></div>
+                                    <div class="bg-telemetry-green h-1.5 rounded-sm" style="width: 74%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 1 Column: Interactive Executive Budget Planner -->
+                <div class="spacex-card corner-reticle rounded-lg p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="pb-3 border-b border-white/10">
+                            <span class="font-mono text-xs text-telemetry-amber uppercase">EXECUTIVE BUDGET SIMULATOR</span>
+                            <h3 class="text-base font-semibold text-white mt-0.5">จำลองคำนวณงบประมาณจัดซื้อ (ปี 66 vs ปี 69)</h3>
+                            <p class="text-xs text-slate-400 mt-1">ปรับจำนวนหน่วยที่ต้องการจัดซื้อเพื่อดูผลกระทบงบประมาณรวมทันที</p>
+                        </div>
+
+                        <div id="budget-planner-inputs" class="space-y-3 mt-4 max-h-[360px] overflow-y-auto pr-1">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Summary Output Box -->
+                    <div class="mt-5 pt-4 border-t border-white/15 bg-space-950/80 rounded-lg p-4 space-y-2.5 border border-telemetry-cyan/30">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400">งบประมาณรวมตามเกณฑ์ DE 66:</span>
+                            <span id="total-budget-66" class="font-mono text-sm text-slate-200">0 บาท</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">งบประมาณรวมตามเกณฑ์ DE 69:</span>
+                            <span id="total-budget-69" class="font-mono text-base font-bold text-telemetry-cyan">0 บาท</span>
+                        </div>
+                        <div class="pt-2 border-t border-white/10 flex justify-between items-center">
+                            <span class="text-xs text-telemetry-amber font-medium">งบประมาณที่ต้องตั้งเพิ่มสุทธิ:</span>
+                            <div class="text-right">
+                                <span id="total-budget-diff" class="font-mono text-base font-bold text-telemetry-amber">+0 บาท</span>
+                                <span id="total-budget-pct" class="block font-mono text-[11px] text-slate-400">(+0.00%)</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="setPresetBudget('small')" class="flex-1 py-1.5 rounded bg-white/5 hover:bg-white/10 text-xs font-mono text-slate-300 border border-white/10 transition">
+                                โครงการเล็ก (10 ชุด)
+                            </button>
+                            <button onclick="setPresetBudget('large')" class="flex-1 py-1.5 rounded bg-white/5 hover:bg-white/10 text-xs font-mono text-slate-300 border border-white/10 transition">
+                                ระดับกรม (100 ชุด)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 2: TECHNICAL SCORING DEEP-DIVE (DE 66 vs DE 69)
+             ========================================== -->
+        <section id="tab-spec" class="tab-content hidden space-y-6">
+            <!-- Notice Banner on Document Header Typo -->
+            <div class="rounded-lg bg-telemetry-blue/10 border border-telemetry-cyan/40 p-4 flex items-start gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-telemetry-cyan shrink-0 mt-0.5"></i>
+                <div class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                    <strong class="text-telemetry-cyan font-mono uppercase">Executive Data Verification Note:</strong> 
+                    ในเอกสารต้นฉบับ ตารางที่ 2 พิมพ์หัวตารางซ้ำเป็นคำว่า <em>"สเปค DE 66 (30 คะแนน)"</em> ซึ่งในทางเทคนิคและไทม์ไลน์ปีที่วางจำหน่าย CPU (ปี 2025 - 2026) ตารางที่ 2 คือ <strong>"เกณฑ์สเปค DE 69 ฉบับใหม่ (คะแนนเต็ม 30 คะแนน)"</strong> ระบบได้จัดระเบียบเปรียบเทียบ Side-by-Side ให้ผู้บริหารเห็นความแตกต่างอย่างชัดเจนด้านล่างนี้
+                </div>
+            </div>
+
+            <!-- Sub-selector: All-in-One vs Notebook -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-space-800/90 p-3 rounded-lg border border-white/10">
+                <div class="flex items-center gap-2">
+                    <button onclick="switchSpecCategory('aio')" id="spec-cat-aio" class="px-4 py-2 rounded-md font-medium text-sm bg-telemetry-cyan text-black font-semibold transition flex items-center gap-2">
+                        <i data-lucide="monitor" class="w-4 h-4"></i>
+                        1. เครื่องคอมพิวเตอร์ All in One (20 vs 30 คะแนน)
+                    </button>
+                    <button onclick="switchSpecCategory('nb')" id="spec-cat-nb" class="px-4 py-2 rounded-md font-medium text-sm bg-white/5 text-slate-300 hover:text-white transition flex items-center gap-2">
+                        <i data-lucide="laptop" class="w-4 h-4"></i>
+                        2. เครื่องคอมพิวเตอร์โน้ตบุ๊ก (20 vs 30 คะแนน)
+                    </button>
+                </div>
+                <div class="font-mono text-xs text-slate-400">
+                    เปรียบเทียบตัวแปรและน้ำหนักคะแนนตามเอกสารแนบทุกตัวอักษร
+                </div>
+            </div>
+
+            <!-- AIO COMPARISON MATRIX -->
+            <div id="spec-matrix-aio" class="space-y-4">
+                <!-- Header Comparison Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="spacex-card rounded-lg p-4 border-l-4 border-l-slate-500">
+                        <div class="flex justify-between items-center">
+                            <span class="font-mono text-xs text-slate-400">LEGACY STANDARD // พ.ศ. 2566</span>
+                            <span class="px-2.5 py-1 rounded bg-white/10 font-mono text-xs text-white">น้ำหนักรวม 20 คะแนน</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-white mt-1">เครื่องคอมพิวเตอร์ All in One (เกณฑ์ปี 2566)</h3>
+                        <p class="text-xs text-slate-400 mt-1">คิดคะแนน 3 ตัวแปร: CPU (10 คะแนน), Launch Date (5 คะแนน), SSD (5 คะแนน) | ราคากลาง 24,000 บาท</p>
+                    </div>
+                    <div class="spacex-card rounded-lg p-4 border-l-4 border-l-telemetry-cyan">
+                        <div class="flex justify-between items-center">
+                            <span class="font-mono text-xs text-telemetry-cyan">NEW STANDARD // พ.ศ. 2569</span>
+                            <span class="px-2.5 py-1 rounded bg-telemetry-cyan/20 border border-telemetry-cyan/40 font-mono text-xs text-telemetry-cyan font-bold">น้ำหนักรวม 30 คะแนน (+10)</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-white mt-1">เครื่องคอมพิวเตอร์ All in One (เกณฑ์ปี 2569)</h3>
+                        <p class="text-xs text-slate-300 mt-1">คิดคะแนน 4 ตัวแปร: เพิ่ม <strong class="text-telemetry-cyan">RAM (10 คะแนน)</strong> และขยับฐาน SSD เริ่มต้นที่ 1 TB | ราคากลาง 29,000 บาท</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Row-by-Row AIO Table -->
+                <div class="spacex-card rounded-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-space-950 border-b border-white/15 font-mono text-xs text-slate-400 uppercase">
+                                    <th class="py-3.5 px-4 w-1/5">ตัวแปรประเมิน</th>
+                                    <th class="py-3.5 px-4 w-2/5 border-l border-white/10">เกณฑ์สเปค DE 66 (เต็ม 20 คะแนน)</th>
+                                    <th class="py-3.5 px-4 w-2/5 border-l border-white/10 text-telemetry-cyan">เกณฑ์สเปค DE 69 (เต็ม 30 คะแนน)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/10 text-xs sm:text-sm">
+                                <!-- Row 1.1 CPU -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">1.1 หน่วยประมวลผลกลาง (CPU)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-white/10 font-mono text-xs text-telemetry-cyan">
+                                            น้ำหนัก: 10 คะแนน (เท่าเดิม)
+                                        </div>
+                                        <p class="text-xs text-slate-400 mt-2">
+                                            ปี 69 ขยับฐาน 0 คะแนนจาก 6 Core (3.6 GHz) เป็น 8 Core (4.8 GHz) และระดับ 100 คะแนนต้องมี 16 Thread ขึ้นไป
+                                        </p>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 space-y-2">
+                                        <div class="p-2.5 rounded bg-space-950/70 border border-white/5">
+                                            <span class="font-mono text-xs text-slate-400 font-bold">[0 คะแนน]</span>
+                                            <p class="text-slate-300 mt-0.5">≥ 6 Core / 12 Thread, Turbo/Max Boost <strong class="text-white">≥ 3.6 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/70 border border-white/10">
+                                            <span class="font-mono text-xs text-telemetry-amber font-bold">[50 คะแนน = ได้ 5 คะแนนจริง]</span>
+                                            <p class="text-slate-200 mt-0.5">≥ 6 Core / 12 Thread, Turbo/Max Boost <strong class="text-white">≥ 4.4 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/70 border border-white/20">
+                                            <span class="font-mono text-xs text-telemetry-green font-bold">[100 คะแนน = ได้ 10 คะแนนจริง]</span>
+                                            <p class="text-white mt-0.5">≥ 8 Core / 12 Thread, Turbo/Max Boost <strong class="text-telemetry-green">≥ 5.0 GHz</strong></p>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 space-y-2 bg-telemetry-cyan/[0.02]">
+                                        <div class="p-2.5 rounded bg-space-950/90 border border-white/10">
+                                            <span class="font-mono text-xs text-slate-400 font-bold">[0 คะแนน]</span>
+                                            <p class="text-slate-300 mt-0.5">≥ 8 Core / 8 Thread, Turbo/Max Boost <strong class="text-white">≥ 4.8 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/90 border border-telemetry-cyan/30">
+                                            <span class="font-mono text-xs text-telemetry-amber font-bold">[50 คะแนน = ได้ 5 คะแนนจริง]</span>
+                                            <p class="text-slate-200 mt-0.5">≥ 8 Core / <strong class="text-telemetry-amber">10 ถึง 14 Thread</strong>, Turbo/Max Boost <strong class="text-white">≥ 4.9 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/90 border border-telemetry-cyan/60">
+                                            <span class="font-mono text-xs text-telemetry-cyan font-bold">[100 คะแนน = ได้ 10 คะแนนจริง]</span>
+                                            <p class="text-white mt-0.5">≥ 8 Core / <strong class="text-telemetry-cyan">≥ 16 Thread</strong>, Turbo/Max Boost <strong class="text-telemetry-cyan">≥ 5.0 GHz</strong></p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 1.2 Launch Date -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">1.2 ปีที่วางจำหน่าย CPU (Launch Date)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-white/10 font-mono text-xs text-telemetry-cyan">
+                                            น้ำหนัก: 5 คะแนน (เท่าเดิม)
+                                        </div>
+                                        <p class="text-xs text-slate-400 mt-2">
+                                            ขยับอายุสถาปัตยกรรม CPU ขึ้นมา 3 ปีเต็ม (CPU ปี 2023-2024 ที่เคยได้เต็มในเกณฑ์เก่า จะได้ 0 คะแนนในเกณฑ์ปี 69)
+                                        </p>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-400">• ก่อนปี 2022 : <strong class="text-white">0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-200">• ปี 2022 : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/70 text-white">• ตั้งแต่ปี 2023 ขึ้นไป : <strong class="text-telemetry-green">100 คะแนน</strong> (5 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-400">• ก่อนปี 2025 : <strong class="text-telemetry-red">0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-200 border border-white/10">• ปี 2025 : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-white border border-telemetry-cyan/50">• ตั้งแต่ปี 2026 ขึ้นไป : <strong class="text-telemetry-cyan">100 คะแนน</strong> (5 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 1.3 RAM -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">1.3 ขนาดหน่วยความจำ (RAM)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-telemetry-green/20 border border-telemetry-green/40 font-mono text-xs text-telemetry-green">
+                                            เพิ่มใหม่: น้ำหนัก 10 คะแนน
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-middle border-l border-white/10 text-center">
+                                        <span class="px-3 py-1.5 rounded bg-white/5 text-slate-400 font-mono text-xs">
+                                            ไม่ได้นำมาคิดคะแนนแยกในตารางปี 2566
+                                        </span>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-400">• ขนาด 16 GB : <strong class="text-white">0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-200 border border-white/10">• ขนาด 24 GB : <strong class="text-telemetry-amber">50 คะแนน</strong> (ได้ 5 คะแนนจริง)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-white border border-telemetry-cyan/50">• ขนาด 32 GB ขึ้นไป : <strong class="text-telemetry-cyan">100 คะแนน</strong> (ได้ 10 คะแนนจริง)</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 1.4 SSD -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">1.4 หน่วยจัดเก็บ SSD M.2 PCIe NVMe</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-white/10 font-mono text-xs text-telemetry-cyan">
+                                            น้ำหนัก: 5 คะแนน (เท่าเดิม)
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-400">• 512 GB : <strong class="text-white">0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-200">• 1 TB : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/70 text-white">• 2 TB : <strong class="text-telemetry-green">100 คะแนน</strong> (5 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-400">• 1 TB : <strong class="text-white">0 คะแนน</strong> (กลายเป็นสเปคฐาน)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-200 border border-white/10">• 1.5 TB : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-white border border-telemetry-cyan/50">• 2 TB : <strong class="text-telemetry-cyan">100 คะแนน</strong> (5 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOTEBOOK COMPARISON MATRIX (Hidden by default) -->
+            <div id="spec-matrix-nb" class="hidden space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="spacex-card rounded-lg p-4 border-l-4 border-l-slate-500">
+                        <div class="flex justify-between items-center">
+                            <span class="font-mono text-xs text-slate-400">LEGACY STANDARD // พ.ศ. 2566</span>
+                            <span class="px-2.5 py-1 rounded bg-white/10 font-mono text-xs text-white">น้ำหนักรวม 20 คะแนน</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-white mt-1">เครื่องคอมพิวเตอร์โน้ตบุ๊ก (เกณฑ์ปี 2566)</h3>
+                        <p class="text-xs text-slate-400 mt-1">คิดคะแนน 4 ตัวแปร: CPU (10), Launch Date (5), SSD (2.5), หน้าจอ (2.5) | ราคากลาง 24,000 บาท</p>
+                    </div>
+                    <div class="spacex-card rounded-lg p-4 border-l-4 border-l-telemetry-cyan">
+                        <div class="flex justify-between items-center">
+                            <span class="font-mono text-xs text-telemetry-cyan">NEW STANDARD // พ.ศ. 2569</span>
+                            <span class="px-2.5 py-1 rounded bg-telemetry-cyan/20 border border-telemetry-cyan/40 font-mono text-xs text-telemetry-cyan font-bold">น้ำหนักรวม 30 คะแนน (+10)</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-white mt-1">เครื่องคอมพิวเตอร์โน้ตบุ๊ก (เกณฑ์ปี 2569)</h3>
+                        <p class="text-xs text-slate-300 mt-1">คิดคะแนน 5 ตัวแปร: เพิ่ม <strong class="text-telemetry-cyan">จอ 16" OLED (5 คะแนน)</strong>, <strong class="text-telemetry-cyan">SSD (5)</strong>, <strong class="text-telemetry-cyan">RAM (5)</strong> | ราคากลาง 28,000 บาท</p>
+                    </div>
+                </div>
+
+                <div class="spacex-card rounded-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-space-950 border-b border-white/15 font-mono text-xs text-slate-400 uppercase">
+                                    <th class="py-3.5 px-4 w-1/5">ตัวแปรประเมิน (Notebook)</th>
+                                    <th class="py-3.5 px-4 w-2/5 border-l border-white/10">เกณฑ์สเปค DE 66 (เต็ม 20 คะแนน)</th>
+                                    <th class="py-3.5 px-4 w-2/5 border-l border-white/10 text-telemetry-cyan">เกณฑ์สเปค DE 69 (เต็ม 30 คะแนน)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/10 text-xs sm:text-sm">
+                                <!-- 2.1 CPU -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">2.1 หน่วยประมวลผลกลาง (CPU)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-white/10 font-mono text-xs text-telemetry-cyan">
+                                            น้ำหนัก: 10 คะแนน
+                                        </div>
+                                        <p class="text-xs text-slate-400 mt-2">
+                                            ปี 69 ปรับลดจำนวน Core ที่ได้ 100 คะแนนจาก &gt;12 Core ลงมาเป็น ≥8 Core / ≥16 Thread แต่บังคับ Clock Speed สูงขึ้นเป็น ≥5.0 GHz
+                                        </p>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 space-y-2">
+                                        <div class="p-2.5 rounded bg-space-950/70">
+                                            <span class="font-mono text-xs text-slate-400 font-bold">[0 คะแนน]</span>
+                                            <p class="text-slate-300 mt-0.5">≥ 4 Core / 8 Thread, Turbo <strong class="text-white">≥ 4.0 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/70">
+                                            <span class="font-mono text-xs text-telemetry-amber font-bold">[50 คะแนน = ได้ 5 คะแนน]</span>
+                                            <p class="text-slate-200 mt-0.5">&gt; 4 Core แต่ไม่เกิน 12 Core / ≥ 12 Thread, Turbo <strong class="text-white">≥ 4.4 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/70">
+                                            <span class="font-mono text-xs text-telemetry-green font-bold">[100 คะแนน = ได้ 10 คะแนน]</span>
+                                            <p class="text-white mt-0.5">&gt; 12 Core / ≥ 20 Thread, Turbo <strong class="text-telemetry-green">≥ 4.4 GHz</strong></p>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 space-y-2 bg-telemetry-cyan/[0.02]">
+                                        <div class="p-2.5 rounded bg-space-950/90 border border-white/10">
+                                            <span class="font-mono text-xs text-slate-400 font-bold">[0 คะแนน]</span>
+                                            <p class="text-slate-300 mt-0.5">≥ 8 Core / 8 Thread, Turbo <strong class="text-white">≥ 4.0 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/90 border border-telemetry-cyan/30">
+                                            <span class="font-mono text-xs text-telemetry-amber font-bold">[50 คะแนน = ได้ 5 คะแนน]</span>
+                                            <p class="text-slate-200 mt-0.5">≥ 8 Core / <strong class="text-telemetry-amber">10 ถึง 14 Thread</strong>, Turbo <strong class="text-white">≥ 4.9 GHz</strong></p>
+                                        </div>
+                                        <div class="p-2.5 rounded bg-space-950/90 border border-telemetry-cyan/60">
+                                            <span class="font-mono text-xs text-telemetry-cyan font-bold">[100 คะแนน = ได้ 10 คะแนน]</span>
+                                            <p class="text-white mt-0.5">≥ 8 Core / <strong class="text-telemetry-cyan">≥ 16 Thread</strong>, Turbo <strong class="text-telemetry-cyan">≥ 5.0 GHz</strong></p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- 2.2 Launch Date -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">2.2 ปีที่วางจำหน่าย CPU (Launch Date)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-white/10 font-mono text-xs text-telemetry-cyan">
+                                            น้ำหนัก: 5 คะแนน
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-400">• ก่อนปี 2022 : <strong>0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-300">• ปี 2022 : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-200">• ปี 2023 : <strong class="text-telemetry-cyan">80 คะแนน</strong> (4.0 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/70 text-white">• ปี 2024 : <strong class="text-telemetry-green">100 คะแนน</strong> (5.0 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-400">• ก่อนปี 2025 : <strong class="text-telemetry-red">0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-200 border border-white/10">• ปี 2025 : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-white border border-telemetry-cyan/50">• ตั้งแต่ปี 2026 ขึ้นไป : <strong class="text-telemetry-cyan">100 คะแนน</strong> (5.0 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+
+                                <!-- 2.3 Display -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">2.3 หน้าจอแสดงผล (Display)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-telemetry-amber/20 border border-telemetry-amber/40 font-mono text-xs text-telemetry-amber">
+                                            น้ำหนักเพิ่ม: 2.5 → 5 คะแนน
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10">
+                                        <div class="text-xs text-slate-400 mb-1.5 font-mono">น้ำหนัก 2.5 คะแนน:</div>
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-400">• ขนาด 14 นิ้ว : <strong>0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-200">• &gt; 14 นิ้ว แต่ไม่ถึง 16 นิ้ว : <strong class="text-telemetry-amber">50 คะแนน</strong> (1.25 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/70 text-white">• ตั้งแต่ 16 นิ้วขึ้นไป : <strong class="text-telemetry-green">100 คะแนน</strong> (2.5 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <div class="text-xs text-telemetry-cyan mb-1.5 font-mono">น้ำหนัก 5 คะแนน (ระบุเทคโนโลยีพาเนล):</div>
+                                        <div class="p-3 rounded bg-space-950/90 border border-telemetry-cyan/60 font-mono text-xs">
+                                            <span class="text-telemetry-cyan font-bold">[100 คะแนน = ได้ 5 คะแนนเต็ม]</span>
+                                            <p class="text-white mt-1">ขนาดไม่น้อยกว่า 16 นิ้ว <strong class="text-telemetry-amber underline">ประเภท OLED</strong></p>
+                                            <p class="text-slate-400 text-[11px] mt-1">*หากไม่ใช่จอ 16 นิ้ว OLED จะไม่ได้คะแนนในข้อนี้ (0 คะแนน)</p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- 2.4 SSD -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">2.4 หน่วยจัดเก็บ SSD M.2 PCIe</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-telemetry-amber/20 border border-telemetry-amber/40 font-mono text-xs text-telemetry-amber">
+                                            น้ำหนักเพิ่ม: 2.5 → 5 คะแนน
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-400">• 512 GB : <strong>0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/70 text-slate-200">• 1 TB : <strong class="text-telemetry-amber">50 คะแนน</strong> (1.25 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/70 text-white">• 2 TB : <strong class="text-telemetry-green">100 คะแนน</strong> (2.5 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-400">• 1 TB : <strong>0 คะแนน</strong> (สเปคเริ่มต้น)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-200 border border-white/10">• 1.5 TB : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-white border border-telemetry-cyan/50">• 2 TB : <strong class="text-telemetry-cyan">100 คะแนน</strong> (5.0 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+
+                                <!-- 2.5 RAM -->
+                                <tr>
+                                    <td class="p-4 align-top bg-space-900/40">
+                                        <div class="font-semibold text-white">2.5 ขนาดหน่วยความจำ (RAM)</div>
+                                        <div class="mt-2 inline-block px-2 py-0.5 rounded bg-telemetry-green/20 border border-telemetry-green/40 font-mono text-xs text-telemetry-green">
+                                            เพิ่มใหม่: น้ำหนัก 5 คะแนน
+                                        </div>
+                                    </td>
+                                    <td class="p-4 align-middle border-l border-white/10 text-center">
+                                        <span class="px-3 py-1.5 rounded bg-white/5 text-slate-400 font-mono text-xs">
+                                            ไม่มีการคิดคะแนนแยกในตารางปี 2566
+                                        </span>
+                                    </td>
+                                    <td class="p-4 align-top border-l border-white/10 bg-telemetry-cyan/[0.02]">
+                                        <ul class="space-y-1.5 font-mono text-xs">
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-400">• 16 GB : <strong>0 คะแนน</strong></li>
+                                            <li class="p-2 rounded bg-space-950/90 text-slate-200 border border-white/10">• 24 GB : <strong class="text-telemetry-amber">50 คะแนน</strong> (2.5 คะแนน)</li>
+                                            <li class="p-2 rounded bg-space-950/90 text-white border border-telemetry-cyan/50">• 32 GB ขึ้นไป : <strong class="text-telemetry-cyan">100 คะแนน</strong> (5.0 คะแนน)</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 3: INTERACTIVE TOR SPEC SCORE SIMULATOR
+             ========================================== -->
+        <section id="tab-sim" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left 7 cols: Spec Configuration Controls -->
+                <div class="lg:col-span-7 spacex-card rounded-lg p-5 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
+                        <div>
+                            <span class="font-mono text-xs text-telemetry-amber uppercase">VIBE CODE TELEMETRY // TOR SCORE SIMULATOR</span>
+                            <h2 class="text-lg font-semibold text-white">จำลองจัดสเปคเพื่อเปรียบเทียบคะแนนที่ได้ในเกณฑ์ DE 66 vs DE 69</h2>
+                        </div>
+                        <div class="flex rounded-md overflow-hidden border border-white/15 shrink-0">
+                            <button onclick="setSimType('aio')" id="sim-btn-aio" class="px-3.5 py-1.5 text-xs font-mono font-semibold bg-telemetry-cyan text-black transition">
+                                All-in-One
+                            </button>
+                            <button onclick="setSimType('nb')" id="sim-btn-nb" class="px-3.5 py-1.5 text-xs font-mono font-semibold bg-space-900 text-slate-300 hover:text-white transition">
+                                Notebook
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Preset Quick Loaders -->
+                    <div>
+                        <span class="font-mono text-xs text-slate-400 block mb-2">เลือกพรีเซ็ตเครื่องจริงในตลาด (QUICK LOAD PRESETS):</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button onclick="loadSimPreset('retail_entry')" class="p-2.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-left transition">
+                                <div class="font-mono text-xs text-telemetry-amber font-semibold">1. รุ่นคุ้มค่าหน้าร้านปี 2024</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">Core 7 150U (10C/12T) / 16GB / 1TB</div>
+                            </button>
+                            <button onclick="loadSimPreset('mid_2025')" class="p-2.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-left transition">
+                                <div class="font-mono text-xs text-telemetry-cyan font-semibold">2. รุ่นมาตรฐานราชการปี 2025</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">Core 5 220H (12C/16T) / 24GB / 1.5TB</div>
+                            </button>
+                            <button onclick="loadSimPreset('flagship_2026')" class="p-2.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-left transition">
+                                <div class="font-mono text-xs text-telemetry-green font-semibold">3. รุ่นท็อปเต็มพิกัดปี 2026</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">Core Ultra 7 (16T+ 5.1GHz) / 32GB / 2TB / OLED</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Form Controls -->
+                    <div class="space-y-4 pt-2">
+                        <!-- 1. CPU Selection -->
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 uppercase mb-1.5">
+                                1. หน่วยประมวลผลกลาง (CPU Cores / Threads / Max Boost)
+                            </label>
+                            <select id="sim-cpu" onchange="calculateSimScore()" class="w-full bg-space-950 border border-white/20 rounded-md px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-telemetry-cyan">
+                                <option value="tier0">4 Core / 8 Thread @ 4.0 GHz (ต่ำกว่าเกณฑ์ขั้นต่ำ 8 Core ของปี 69!)</option>
+                                <option value="tier1">6 Core / 12 Thread @ 4.4 GHz (ต่ำกว่าเกณฑ์ขั้นต่ำ 8 Core ของปี 69!)</option>
+                                <option value="tier2">8 Core / 8 Thread @ 4.8 GHz (เช่น Core Ultra 7 256V Lunar Lake - ฐาน 0 คะแนนปี 69)</option>
+                                <option value="tier3" selected>10 Core / 12 Thread @ 5.0+ GHz (เช่น Core 7 150U / Core 5 120U)</option>
+                                <option value="tier4">8+ Core / 14 Thread @ 4.9+ GHz (เช่น Core Ultra 5 225H / Ryzen AI 7)</option>
+                                <option value="tier5">12+ Core / 16-20 Thread @ 5.1+ GHz (เช่น Core i7-13700H / Core 7 250H / Ultra 7)</option>
+                            </select>
+                        </div>
+
+                        <!-- 2. CPU Launch Year -->
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 uppercase mb-1.5">
+                                2. ปีที่วางจำหน่ายโปรเซสเซอร์ครั้งแรก (CPU Launch Date)
+                            </label>
+                            <select id="sim-year" onchange="calculateSimScore()" class="w-full bg-space-950 border border-white/20 rounded-md px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-telemetry-cyan">
+                                <option value="2021">ก่อนปี 2022</option>
+                                <option value="2022">ปี 2022</option>
+                                <option value="2023">ปี 2023</option>
+                                <option value="2024">ปี 2024</option>
+                                <option value="2025" selected>ปี 2025 (ได้ 50% ในเกณฑ์ใหม่ DE 69)</option>
+                                <option value="2026">ตั้งแต่ปี 2026 ขึ้นไป (ได้ 100% ในเกณฑ์ใหม่ DE 69)</option>
+                            </select>
+                        </div>
+
+                        <!-- 3. RAM Capacity -->
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 uppercase mb-1.5">
+                                3. ขนาดหน่วยความจำหลัก (RAM Capacity)
+                            </label>
+                            <select id="sim-ram" onchange="calculateSimScore()" class="w-full bg-space-950 border border-white/20 rounded-md px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-telemetry-cyan">
+                                <option value="16">16 GB (0 คะแนนในเกณฑ์ปี 69)</option>
+                                <option value="24" selected>24 GB (ได้คะแนน 50% ในเกณฑ์ปี 69)</option>
+                                <option value="32">32 GB ขึ้นไป (ได้คะแนนเต็ม 100% ในเกณฑ์ปี 69)</option>
+                            </select>
+                        </div>
+
+                        <!-- 4. SSD Capacity -->
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 uppercase mb-1.5">
+                                4. ความจุหน่วยจัดเก็บข้อมูล M.2 PCIe NVMe SSD
+                            </label>
+                            <select id="sim-ssd" onchange="calculateSimScore()" class="w-full bg-space-950 border border-white/20 rounded-md px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-telemetry-cyan">
+                                <option value="512">512 GB (ต่ำกว่าฐานคะแนนปี 69!)</option>
+                                <option value="1000" selected>1 TB (ได้ 50% ในปี 66 / ได้ 0 คะแนนในปี 69)</option>
+                                <option value="1500">1.5 TB (ได้ 50% ในเกณฑ์ปี 69)</option>
+                                <option value="2000">2 TB (ได้เต็ม 100% ทั้งปี 66 และปี 69)</option>
+                            </select>
+                        </div>
+
+                        <!-- 5. Screen Size & Type (Only active for Notebook) -->
+                        <div id="sim-screen-container" class="hidden">
+                            <label class="block text-xs font-mono text-telemetry-cyan uppercase mb-1.5">
+                                5. ขนาดและประเภทหน้าจอโน้ตบุ๊ก (Display Panel)
+                            </label>
+                            <select id="sim-screen" onchange="calculateSimScore()" class="w-full bg-space-950 border border-telemetry-cyan/40 rounded-md px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-telemetry-cyan">
+                                <option value="14_ips">14 นิ้ว IPS / WUXGA</option>
+                                <option value="15_ips">15.6 นิ้ว IPS FHD</option>
+                                <option value="16_ips">16 นิ้ว IPS WUXGA (ไม่ใช่ OLED)</option>
+                                <option value="16_oled" selected>16 นิ้วขึ้นไป ประเภท OLED (ได้ 100% ในเกณฑ์ DE 69)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 5 cols: Real-Time Telemetry Score Output -->
+                <div class="lg:col-span-5 spacex-card corner-reticle rounded-lg p-5 flex flex-col justify-between space-y-5">
+                    <div>
+                        <span class="font-mono text-xs text-telemetry-cyan uppercase">LIVE TELEMETRY READOUT</span>
+                        <h3 class="text-base font-semibold text-white mt-0.5">ผลลัพธ์การประเมินคะแนนเทคนิค</h3>
+
+                        <!-- Score Gauges Side-by-Side -->
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <!-- DE 66 Score Box -->
+                            <div class="p-4 rounded-lg bg-space-950 border border-white/10">
+                                <span class="font-mono text-xs text-slate-400">เกณฑ์เก่า DE 2566</span>
+                                <div class="mt-2 flex items-baseline gap-1">
+                                    <span id="sim-score-66" class="font-mono text-3xl font-bold text-white">17.5</span>
+                                    <span class="font-mono text-sm text-slate-400">/ 20</span>
+                                </div>
+                                <div class="mt-1 font-mono text-xs text-slate-400">
+                                    คิดเป็น <span id="sim-pct-66" class="text-white font-semibold">87.5%</span>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full mt-3 overflow-hidden">
+                                    <div id="sim-bar-66" class="bg-slate-300 h-full transition-all duration-300" style="width: 87.5%"></div>
+                                </div>
+                            </div>
+
+                            <!-- DE 69 Score Box -->
+                            <div class="p-4 rounded-lg bg-space-950 border border-telemetry-cyan/50 shadow-[0_0_20px_rgba(0,240,255,0.08)]">
+                                <span class="font-mono text-xs text-telemetry-cyan">เกณฑ์ใหม่ DE 2569</span>
+                                <div class="mt-2 flex items-baseline gap-1">
+                                    <span id="sim-score-69" class="font-mono text-3xl font-bold text-telemetry-cyan">12.5</span>
+                                    <span class="font-mono text-sm text-slate-400">/ 30</span>
+                                </div>
+                                <div class="mt-1 font-mono text-xs text-slate-300">
+                                    คิดเป็น <span id="sim-pct-69" class="text-telemetry-cyan font-semibold">41.7%</span>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full mt-3 overflow-hidden">
+                                    <div id="sim-bar-69" class="bg-telemetry-cyan h-full transition-all duration-300" style="width: 41.7%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown List -->
+                        <div class="mt-5 space-y-2">
+                            <div class="font-mono text-xs text-slate-400 uppercase">รายละเอียดคะแนนรายข้อ (DE 66 เทียบ DE 69):</div>
+                            <div id="sim-breakdown" class="space-y-2 text-xs font-mono">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Executive Verdict Box -->
+                    <div id="sim-verdict" class="p-3.5 rounded-lg bg-telemetry-amber/10 border border-telemetry-amber/40 text-xs text-slate-200 leading-relaxed">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 4: MARKET REALITY CHECK (ADVICE / JIB)
+             ========================================== -->
+        <section id="tab-market" class="tab-content hidden space-y-6">
+            <!-- Executive Strategic Insight Header -->
+            <div class="spacex-card rounded-lg p-5 border-l-4 border-l-telemetry-purple">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <span class="font-mono text-xs text-telemetry-cyan uppercase">MARKET REALITY BENCHMARK // ADVICE / JIB / COMMERCIAL B2B (OCT 2026)</span>
+                        <h2 class="text-lg font-semibold text-white mt-0.5">
+                            ตรวจสอบราคาขายจริงในท้องตลาดไทย เทียบกับเพดานราคากลางและเกณฑ์คะแนน DE 69
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                            จากการสำรวจข้อมูลสินค้าจริงบนเว็บไซต์ค้าปลีกไอทีชั้นนำ (Advice, JIB) และสายส่งโครงการราชการ (Commercial B2B) พบข้อสังเกตสำคัญที่ผู้บริหารต้องใช้ประกอบการกำหนด TOR
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="filterMarket('all')" id="mkt-btn-all" class="px-3 py-1.5 rounded text-xs font-mono bg-telemetry-cyan text-black font-semibold">ทั้งหมด (6 รุ่น)</button>
+                        <button onclick="filterMarket('aio')" id="mkt-btn-aio" class="px-3 py-1.5 rounded text-xs font-mono bg-white/5 text-slate-300 hover:text-white">All-in-One (29,000฿)</button>
+                        <button onclick="filterMarket('nb')" id="mkt-btn-nb" class="px-3 py-1.5 rounded text-xs font-mono bg-white/5 text-slate-300 hover:text-white">Notebook (28,000฿)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Product Cards Grid -->
+            <div id="market-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Populated via JS -->
+            </div>
+
+            <!-- 3 Strategic Recommendations for C-Level Executives -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="spacex-card rounded-lg p-5">
+                    <div class="flex items-center gap-2.5 text-telemetry-cyan font-mono text-xs uppercase font-semibold">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                        STRATEGIC INSIGHT 01 // กับดัก SSD 512GB หน้าร้าน
+                    </div>
+                    <h4 class="text-sm font-semibold text-white mt-2">สินค้าขายปลีกส่วนใหญ่ยังให้ SSD 512GB</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        ในร้าน Advice และ JIB เครื่องระดับราคา 26,000 - 29,000 บาทที่ใส่ชิปใหม่ปี 2025-2026 มักให้ SSD มาเพียง <strong class="text-white">512 GB</strong> แต่เกณฑ์คะแนน DE 69 เริ่มนับ 0 คะแนนที่ <strong class="text-telemetry-cyan">1 TB</strong> ดังนั้นในการจัดซื้อจริง หน่วยงานต้องระบุให้ผู้ยื่นข้อเสนออัปเกรด SSD เป็น 1TB-2TB แบบ CTO (Configure-to-Order)
+                    </p>
+                </div>
+
+                <div class="spacex-card rounded-lg p-5">
+                    <div class="flex items-center gap-2.5 text-telemetry-amber font-mono text-xs uppercase font-semibold">
+                        <i data-lucide="monitor-smartphone" class="w-4 h-4"></i>
+                        STRATEGIC INSIGHT 02 // ตัวแปรจอ 16" OLED ใน Notebook
+                    </div>
+                    <h4 class="text-sm font-semibold text-white mt-2">จอ 16 นิ้ว OLED มีราคาปลีกเกิน 28,000 บาท</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        โน้ตบุ๊กที่มาพร้อมจอ <strong class="text-white">16 นิ้ว OLED</strong> และชิปปี 2025-2026 (เช่น ASUS Vivobook S16 OLED หรือ Lenovo IdeaPad Pro 5) มีราคาหน้าร้านอยู่ที่ <strong class="text-telemetry-amber">31,990 - 34,990 บาท</strong> การจะได้สเปคนี้ในงบราคากลาง 28,000 บาท ต้องอาศัยส่วนลดโครงการ (Project Volume Discount) จากเจ้าของแบรนด์โดยตรง
+                    </p>
+                </div>
+
+                <div class="spacex-card rounded-lg p-5">
+                    <div class="flex items-center gap-2.5 text-telemetry-green font-mono text-xs uppercase font-semibold">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                        STRATEGIC INSIGHT 03 // กลยุทธ์ทำคะแนน Price-Performance
+                    </div>
+                    <h4 class="text-sm font-semibold text-white mt-2">การอัปเกรด RAM เป็น 32GB คุ้มค่าคะแนนที่สุด</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        ในเกณฑ์ AIO ปี 69 <strong class="text-telemetry-green">RAM มีน้ำหนักถึง 10 คะแนนเต็ม (จาก 30 คะแนน)</strong> การเพิ่ม RAM DDR5 จาก 16GB เป็น 32GB มีต้นทุนฮาร์ดแวร์เพิ่มขึ้นเพียง ~1,800 - 2,200 บาท แต่ทำให้ได้คะแนนก้าวกระโดดจาก 0 เป็น 10 คะแนนเต็มทันที
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- EXECUTIVE BRIEFING MODAL -->
+    <div id="exec-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="spacex-card corner-reticle rounded-xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto border border-telemetry-cyan/50 shadow-[0_0_50px_rgba(0,240,255,0.15)]">
+            <div class="flex items-center justify-between pb-4 border-b border-white/15">
+                <div>
+                    <span class="font-mono text-xs text-telemetry-cyan uppercase">CONFIDENTIAL // EXECUTIVE SUMMARY MEMO</span>
+                    <h3 class="text-lg font-bold text-white">บันทึกสรุปผู้บริหาร: การปรับเปลี่ยนเกณฑ์ครุภัณฑ์คอมพิวเตอร์ DE 66 สู่ DE 69</h3>
+                </div>
+                <button onclick="closeExecutiveBriefModal()" class="p-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 my-5 text-xs sm:text-sm text-slate-200 leading-relaxed">
+                <div class="p-3.5 rounded bg-space-950 border border-white/10">
+                    <strong class="text-telemetry-cyan block mb-1">1. ด้านงบประมาณ (Budget Impact):</strong>
+                    ปรับเพิ่มเพดานราคากลาง 4 รายการหลัก เพื่อให้สอดคล้องกับยุค AI PC และต้นทุนซอฟต์แวร์ลิขสิทธิ์ ได้แก่:
+                    <ul class="list-disc list-inside mt-1 text-slate-300 space-y-0.5">
+                        <li>เครื่อง All-in-One สำหรับงานประมวลผล: ปรับเพิ่มจาก 24,000 เป็น <strong>29,000 บาท (+5,000 บาท / +20.83%)</strong></li>
+                        <li>เครื่อง Notebook สำหรับงานประมวลผล: ปรับเพิ่มจาก 24,000 เป็น <strong>28,000 บาท (+4,000 บาท / +16.67%)</strong></li>
+                        <li>ระบบปฏิบัติการ (OS): ปรับเพิ่มจาก 4,200 เป็น <strong>5,500 บาท (+1,300 บาท)</strong></li>
+                        <li>ชุดโปรแกรมสำนักงาน (Office): ปรับเพิ่มจาก 16,000 เป็น <strong>18,500 บาท (+2,500 บาท)</strong></li>
+                    </ul>
+                </div>
+
+                <div class="p-3.5 rounded bg-space-950 border border-white/10">
+                    <strong class="text-telemetry-green block mb-1">2. ด้านเกณฑ์คะแนนเทคนิค (Technical Weighting 20 → 30 คะแนน):</strong>
+                    <ul class="list-disc list-inside mt-1 text-slate-300 space-y-0.5">
+                        <li>ขยายคะแนนเต็มจาก 20 คะแนน เป็น <strong>30 คะแนน</strong> ทั้งเครื่อง AIO และ Notebook</li>
+                        <li>นำ <strong>ขนาดหน่วยความจำ RAM (16GB / 24GB / 32GB)</strong> เข้ามาคิดคะแนนเป็นครั้งแรก (AIO 10 คะแนน, Notebook 5 คะแนน)</li>
+                        <li>ยกระดับความจุ SSD ขั้นต่ำในตารางคะแนนจาก 512 GB เป็น <strong>1 TB</strong> (และให้คะแนนเต็มที่ 2 TB)</li>
+                        <li>ปรับเกณฑ์ปีที่วางจำหน่าย CPU (Launch Date) จากเดิมปี 2022-2024 เป็น <strong>ปี 2025 (50%) และปี 2026 ขึ้นไป (100%)</strong></li>
+                    </ul>
+                </div>
+
+                <div class="p-3.5 rounded bg-space-950 border border-telemetry-amber/40">
+                    <strong class="text-telemetry-amber block mb-1">3. ข้อเสนอแนะเชิงกลยุทธ์จากเลขานุการผู้บริหาร (Actionable Advice):</strong>
+                    เมื่อตรวจสอบกับราคาสินค้าจริงในร้าน <strong>Advice / JIB</strong> พบว่าเครื่องที่วางจำหน่ายหน้าร้านในงบ 28,000 - 29,000 บาท ส่วนใหญ่ให้สเปค <strong>RAM 16GB + SSD 512GB</strong> ซึ่งจะได้คะแนนตามเกณฑ์ DE 69 น้อยมาก การจัดซื้อด้วยวิธีเกณฑ์ราคาประกอบเกณฑ์อื่น (Price-Performance) จึงควรเปิดโอกาสให้ตัวแทนจำหน่ายเสนอเครื่องสั่งประกอบพิเศษจากโรงงาน (CTO / Project Model) ที่อัปเกรด RAM 24-32GB และ SSD 1-2TB ภายใต้กรอบวงเงินราคากลางใหม่
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-white/10">
+                <button onclick="closeExecutiveBriefModal()" class="px-4 py-2 rounded bg-telemetry-cyan text-black font-mono text-xs font-bold hover:opacity-90 transition">
+                    รับทราบข้อมูล (ACKNOWLEDGE)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 bg-space-950 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-slate-500 gap-2">
+            <div class="flex items-center gap-2">
+                <span>DE-SPEC TELEMETRY SYSTEM // PREPARED BY EXECUTIVE DIGITAL SECRETARY</span>
+                <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">กดปุ่ม [T] บนคีย์บอร์ดเพื่อสลับธีม SpaceX / Google Workspace</span>
+            </div>
+            <div>SOURCE: เกณฑ์ราคากลางครุภัณฑ์คอมพิวเตอร์ พ.ศ. 2566 & พ.ศ. 2569 + ADVICE/JIB MARKET DATA</div>
+        </div>
+    </footer>
+
+    <!-- APPLICATION LOGIC -->
+    <script>
+        // ==========================================
+        // DUAL-THEME CONTROLLER (SPACEX vs GOOGLE WORKSPACE)
+        // ==========================================
+        let currentTheme = localStorage.getItem('de_spec_exec_theme') || 'spacex';
+
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            localStorage.setItem('de_spec_exec_theme', themeName);
+
+            const bodyEl = document.body;
+            const btnSpacex = document.getElementById('theme-btn-spacex');
+            const btnWorkspace = document.getElementById('theme-btn-workspace');
+            const headerBadge = document.getElementById('header-badge-mode');
+            const headerSubBadge = document.getElementById('header-sub-badge');
+
+            if (themeName === 'workspace') {
+                bodyEl.classList.add('theme-workspace');
+                btnWorkspace.className = "theme-option-btn active-workspace";
+                btnSpacex.className = "theme-option-btn text-slate-500 hover:text-slate-900";
+                if (headerBadge) headerBadge.textContent = "GOOGLE WORKSPACE // EXECUTIVE REPORT";
+                if (headerSubBadge) headerSubBadge.textContent = "LOOKER STUDIO TELEMETRY v2569.4";
+            } else {
+                bodyEl.classList.remove('theme-workspace');
+                btnSpacex.className = "theme-option-btn active-spacex";
+                btnWorkspace.className = "theme-option-btn text-slate-400 hover:text-white";
+                if (headerBadge) headerBadge.textContent = "DE-SPEC MISSION CONTROL";
+                if (headerSubBadge) headerSubBadge.textContent = "EXECUTIVE TELEMETRY v2569.4";
+            }
+        }
+
+        // Support keyboard shortcut 'T' to toggle theme (when not typing in an input)
+        window.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            if (activeTag === 'input' || activeTag === 'select' || activeTag === 'textarea') return;
+            if (e.key === 't' || e.key === 'T' || e.key === 'ะ') {
+                setTheme(currentTheme === 'spacex' ? 'workspace' : 'spacex');
+            }
+        });
+
+        // 1. Exact 7 Equipment Items from Uploaded Document
+        const equipmentItems = [
+            {
+                id: 1,
+                name: "เครื่องคอมพิวเตอร์ All in one สำหรับงานประมวลผล",
+                price66: 24000,
+                price69: 29000,
+                diff: 5000,
+                defaultQty: 20
+            },
+            {
+                id: 2,
+                name: "เครื่องคอมพิวเตอร์โน้ตบุ๊ก สำหรับงานประมวลผล",
+                price66: 24000,
+                price69: 28000,
+                diff: 4000,
+                defaultQty: 15
+            },
+            {
+                id: 3,
+                name: "ชุดโปรแกรมระบบปฏิบัติการ สำหรับเครื่องคอมพิวเตอร์และเครื่องคอมพิวเตอร์โน้ตบุ๊ก",
+                price66: 4200,
+                price69: 5500,
+                diff: 1300,
+                defaultQty: 35
+            },
+            {
+                id: 4,
+                name: "ชุดโปรแกรมจัดการสำนักงาน แบบที่ ๑ ที่มีลิขสิทธิ์ถูกต้องตามกฎหมาย",
+                price66: 16000,
+                price69: 18500,
+                diff: 2500,
+                defaultQty: 35
+            },
+            {
+                id: 5,
+                name: "ชุดโปรแกรมป้องกันไวรัส 3 ปี",
+                price66: 2100,
+                price69: 2100,
+                diff: 0,
+                defaultQty: 35
+            },
+            {
+                id: 6,
+                name: "เครื่องสำรองไฟฟ้า ขนาด ๘๐๐ VA",
+                price66: 2500,
+                price69: 2500,
+                diff: 0,
+                defaultQty: 20
+            },
+            {
+                id: 7,
+                name: "เครื่องสแกนเนอร์ สำหรับงานเก็บเอกสารระดับศูนย์บริการ แบบที่ ๓",
+                price66: 33000,
+                price69: 33000,
+                diff: 0,
+                defaultQty: 2
+            }
+        ];
+
+        // 2. Real Market Benchmark Data (Advice / JIB / Commercial B2B) with Simulator Config mapping
+        const marketProducts = [
+            {
+                id: "mkt-1",
+                category: "aio",
+                catLabel: "All-in-One (เพดาน DE69: 29,000฿)",
+                brand: "DELL",
+                model: "Inspiron / EC24250 All-in-One 23.8\"",
+                retailer: "JIB / Advice (มีสินค้าพร้อมส่ง)",
+                marketPrice: 28490,
+                budgetCeiling: 29000,
+                specs: {
+                    cpu: "Intel Core 7 150U (10 Core / 12 Thread, Boost 5.4 GHz)",
+                    launch: "Q1 2024 (Raptor Lake Refresh)",
+                    ram: "16 GB DDR5",
+                    ssd: "1 TB M.2 PCIe NVMe",
+                    display: "23.8\" FHD IPS Anti-Glare + Windows 11 Home"
+                },
+                simConfig: { type: "aio", cpu: "tier3", year: "2024", ram: "16", ssd: "1000", screen: "16_ips" },
+                score66: 17.5,
+                score69: 5.0,
+                scoreBreakdown69: "CPU ได้ 5/10 | ปี CPU (2024) ได้ 0/5 | RAM 16GB ได้ 0/10 | SSD 1TB ได้ 0/5",
+                status: "IN_BUDGET",
+                insight: "ราคาอยู่ในงบ 29,000 บาท และได้ SSD 1TB ตรงตามฐานปี 69 แต่เนื่องจาก CPU เปิดตัวปี 2024 จึงไม่ได้คะแนน Launch Date ในเกณฑ์ปี 69"
+            },
+            {
+                id: "mkt-2",
+                category: "aio",
+                catLabel: "All-in-One (เพดาน DE69: 29,000฿)",
+                brand: "LENOVO",
+                model: "ThinkCentre Neo 50a 24 Gen 6 (AI PC)",
+                retailer: "JIB Commercial / Advice",
+                marketPrice: 29300,
+                budgetCeiling: 29000,
+                specs: {
+                    cpu: "Intel Core 5 220H (12 Core / 16 Thread, Boost 4.9 GHz)",
+                    launch: "2025 Series (Core Series 2)",
+                    ram: "16 GB DDR5",
+                    ssd: "512 GB (ต้องสั่ง CTO เป็น 1 TB)",
+                    display: "23.8\" FHD IPS 100Hz, ประกัน 3 ปี Onsite"
+                },
+                simConfig: { type: "aio", cpu: "tier4", year: "2025", ram: "16", ssd: "512", screen: "16_ips" },
+                score66: 15.0,
+                score69: 7.5,
+                scoreBreakdown69: "CPU ได้ 5/10 | ปี CPU (2025) ได้ 2.5/5 | RAM 16GB ได้ 0/10 | SSD ต้องอัปเป็น 1TB",
+                status: "BORDERLINE",
+                insight: "เป็นเครื่องเกรด Commercial ที่ได้ชิปยุค 2025 แต่ราคาปลีกปริ่มเพดาน 29,000 บาท และต้องสั่งอัปเกรด SSD จาก 512GB เป็น 1TB ในราคาโครงการ"
+            },
+            {
+                id: "mkt-3",
+                category: "aio",
+                catLabel: "All-in-One (เพดาน DE69: 29,000฿)",
+                brand: "HP",
+                model: "ProOne 240 / OmniStudio 24 (CTO Gov Spec)",
+                retailer: "ตัวแทนจำหน่าย B2B / Advice Corporate",
+                marketPrice: 28900,
+                budgetCeiling: 29000,
+                specs: {
+                    cpu: "Intel Core 7 250H / Ryzen AI 7 (8C+/16T, Boost 5.1 GHz)",
+                    launch: "ปี 2025 - 2026",
+                    ram: "32 GB DDR5 (CTO Upgrade)",
+                    ssd: "1 TB M.2 PCIe NVMe",
+                    display: "23.8\" FHD IPS, Wi-Fi 6E, 3Y Onsite"
+                },
+                simConfig: { type: "aio", cpu: "tier5", year: "2025", ram: "32", ssd: "1000", screen: "16_ips" },
+                score66: 17.5,
+                score69: 22.5,
+                scoreBreakdown69: "CPU (8C+/16T 5.1GHz) ได้ 10/10 | ปี 2025 ได้ 2.5/5 | RAM 32GB ได้ 10/10 | SSD 1TB ได้ 0/5",
+                status: "RECOMMENDED",
+                insight: "การจัดสเปคแบบ B2B CTO โดยเน้นอัด RAM เป็น 32GB และเลือก CPU 8C/16T 5.0GHz ทำให้กวาดคะแนนเกณฑ์ปี 69 ได้สูงถึง 22.5/30 ภายในงบ 29,000 บาท"
+            },
+            {
+                id: "mkt-4",
+                category: "nb",
+                catLabel: "Notebook (เพดาน DE69: 28,000฿)",
+                brand: "ASUS",
+                model: "Vivobook S16 OLED (S3607CA / S3607AA)",
+                retailer: "Advice / JIB / Banana IT",
+                marketPrice: 32990,
+                budgetCeiling: 28000,
+                specs: {
+                    cpu: "Intel Core Ultra 5 225H / 325 (14C/14T, Boost 4.9 GHz)",
+                    launch: "ปี 2025 - 2026 (Arrow Lake / Panther Lake)",
+                    ram: "16 GB DDR5",
+                    ssd: "1 TB M.2 PCIe 4.0",
+                    display: "16.0 นิ้ว WUXGA (1920x1200) OLED"
+                },
+                simConfig: { type: "nb", cpu: "tier4", year: "2026", ram: "16", ssd: "1000", screen: "16_oled" },
+                score66: 16.25,
+                score69: 15.0,
+                scoreBreakdown69: "CPU ได้ 5/10 | ปี 2026 ได้ 5/5 | จอ 16\" OLED ได้เต็ม 5/5 | RAM 16GB ได้ 0/5 | SSD 1TB ได้ 0/5",
+                status: "OVER_BUDGET",
+                insight: "ได้คะแนนจอ 16\" OLED เต็ม 5 คะแนน และปี CPU ใหม่ล่าสุด แต่ราคาขายปลีกหน้าร้าน (32,990฿) สูงกว่าราคากลาง DE69 อยู่ 4,990 บาท ต้องต่อรองราคา Big Lot"
+            },
+            {
+                id: "mkt-5",
+                category: "nb",
+                catLabel: "Notebook (เพดาน DE69: 28,000฿)",
+                brand: "LENOVO",
+                model: "IdeaPad Slim 5 16\" / V15 Gen 6",
+                retailer: "Advice / JIB",
+                marketPrice: 27990,
+                budgetCeiling: 28000,
+                specs: {
+                    cpu: "Intel Core 7 240H / Ryzen 7 (8C+/16T, Boost 5.1 GHz)",
+                    launch: "ปี 2025",
+                    ram: "24 GB DDR5",
+                    ssd: "1 TB M.2 PCIe Gen4",
+                    display: "16.0 นิ้ว IPS WUXGA (ไม่ใช่ OLED)"
+                },
+                simConfig: { type: "nb", cpu: "tier5", year: "2025", ram: "24", ssd: "1000", screen: "16_ips" },
+                score66: 16.25,
+                score69: 15.0,
+                scoreBreakdown69: "CPU (8C/16T 5.1GHz) ได้ 10/10 | ปี 2025 ได้ 2.5/5 | จอ IPS ได้ 0/5 | RAM 24GB ได้ 2.5/5 | SSD 1TB ได้ 0/5",
+                status: "IN_BUDGET",
+                insight: "อยู่ในงบ 28,000 บาทของเกณฑ์ปี 69 แม้จะเสียคะแนนจอ OLED 5 คะแนน แต่ชดเชยด้วยคะแนน CPU 8C/16T (10 คะแนน) และอัปเกรด RAM 24GB ได้ในงบ"
+            },
+            {
+                id: "mkt-6",
+                category: "nb",
+                catLabel: "Notebook (เพดาน DE69: 28,000฿)",
+                brand: "ACER",
+                model: "Swift Go 16 OLED / TravelMate P2 16",
+                retailer: "Advice / JIB Commercial",
+                marketPrice: 30900,
+                budgetCeiling: 28000,
+                specs: {
+                    cpu: "Intel Core Ultra 7 / Core 7 Series 2 (16 Thread, Boost 5.0 GHz)",
+                    launch: "ปี 2025",
+                    ram: "32 GB LPDDR5X",
+                    ssd: "1 TB M.2 PCIe NVMe",
+                    display: "16.0 นิ้ว OLED 3.2K 120Hz"
+                },
+                simConfig: { type: "nb", cpu: "tier5", year: "2025", ram: "32", ssd: "1000", screen: "16_oled" },
+                score66: 18.75,
+                score69: 22.5,
+                scoreBreakdown69: "CPU ได้ 10/10 | ปี 2025 ได้ 2.5/5 | จอ 16\" OLED ได้ 5/5 | RAM 32GB ได้ 5/5 | SSD 1TB ได้ 0/5",
+                status: "BORDERLINE",
+                insight: "เป็นสเปคในอุดมคติของเกณฑ์ DE 69 (ได้ถึง 22.5/30 คะแนน) ราคาปลีกอยู่ที่ ~30,900 บาท หากจัดซื้อจำนวนมากในรูปแบบโครงการสามารถทำราคาเข้ากรอบ 28,000 บาทได้"
+            }
+        ];
+
+        // Current Simulator State
+        let currentSimType = 'aio';
+
+        // Format currency
+        function formatNumber(num) {
+            return num.toLocaleString('th-TH');
+        }
+
+        // Render Tab 1: Price Matrix & Budget Planner
+        function renderPriceMatrix() {
+            const tbody = document.getElementById('price-matrix-tbody');
+            const plannerContainer = document.getElementById('budget-planner-inputs');
+            tbody.innerHTML = '';
+            plannerContainer.innerHTML = '';
+
+            equipmentItems.forEach((item) => {
+                const pct = item.diff > 0 ? `+${((item.diff / item.price66) * 100).toFixed(2)}%` : '0.00%';
+                const diffBadge = item.diff > 0 
+                    ? `<span class="text-telemetry-amber font-semibold">+${formatNumber(item.diff)}</span>`
+                    : `<span class="text-slate-500">-</span>`;
+                const pctBadge = item.diff > 0
+                    ? `<span class="px-2 py-0.5 rounded bg-telemetry-cyan/15 text-telemetry-cyan border border-telemetry-cyan/30 font-mono text-xs">${pct}</span>`
+                    : `<span class="px-2 py-0.5 rounded bg-white/5 text-slate-400 font-mono text-xs">คงเดิม</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/[0.03] transition">
+                        <td class="py-3.5 px-2 font-mono text-slate-400">${item.id}</td>
+                        <td class="py-3.5 px-3 font-medium text-white">${item.name}</td>
+                        <td class="py-3.5 px-3 text-right font-mono text-slate-300">${formatNumber(item.price66)}</td>
+                        <td class="py-3.5 px-3 text-right font-mono font-bold text-telemetry-cyan">${formatNumber(item.price69)}</td>
+                        <td class="py-3.5 px-3 text-right font-mono">${diffBadge}</td>
+                        <td class="py-3.5 px-2 text-right">${pctBadge}</td>
+                    </tr>
+                `;
+
+                plannerContainer.innerHTML += `
+                    <div class="p-2.5 rounded bg-space-950/60 border border-white/10 flex items-center justify-between gap-2">
+                        <div class="text-xs text-slate-200 truncate pr-2" title="${item.name}">
+                            <span class="font-mono text-telemetry-cyan">${item.id}.</span> ${item.name}
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <input type="number" min="0" max="5000" value="${item.defaultQty}" 
+                                id="qty-item-${item.id}"
+                                oninput="updateBudgetPlanner()"
+                                class="w-16 bg-space-900 border border-white/20 rounded px-2 py-1 text-right font-mono text-xs text-white focus:outline-none focus:border-telemetry-cyan">
+                            <span class="text-[11px] text-slate-400 font-mono">หน่วย</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            updateBudgetPlanner();
+        }
+
+        function updateBudgetPlanner() {
+            let sum66 = 0;
+            let sum69 = 0;
+
+            equipmentItems.forEach((item) => {
+                const inputEl = document.getElementById(`qty-item-${item.id}`);
+                const qty = Math.max(0, parseInt(inputEl?.value || 0, 10));
+                sum66 += qty * item.price66;
+                sum69 += qty * item.price69;
+            });
+
+            const diff = sum69 - sum66;
+            const pctChange = sum66 > 0 ? ((diff / sum66) * 100).toFixed(2) : "0.00";
+            document.getElementById('total-budget-66').textContent = `${formatNumber(sum66)} บาท`;
+            document.getElementById('total-budget-69').textContent = `${formatNumber(sum69)} บาท`;
+            document.getElementById('total-budget-diff').textContent = `+${formatNumber(diff)} บาท`;
+            const pctEl = document.getElementById('total-budget-pct');
+            if (pctEl) pctEl.textContent = `(เพิ่มขึ้น +${pctChange}%)`;
+        }
+
+        function setPresetBudget(mode) {
+            const mult = mode === 'large' ? 5 : 0.5;
+            equipmentItems.forEach((item) => {
+                const inputEl = document.getElementById(`qty-item-${item.id}`);
+                if (inputEl) {
+                    inputEl.value = Math.max(1, Math.round(item.defaultQty * mult));
+                }
+            });
+            updateBudgetPlanner();
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.classList.remove('text-slate-300');
+            }
+        }
+
+        // Sub-Tab Switching in Module 2 (AIO vs Notebook)
+        function switchSpecCategory(cat) {
+            const aioDiv = document.getElementById('spec-matrix-aio');
+            const nbDiv = document.getElementById('spec-matrix-nb');
+            const aioBtn = document.getElementById('spec-cat-aio');
+            const nbBtn = document.getElementById('spec-cat-nb');
+
+            if (cat === 'aio') {
+                aioDiv.classList.remove('hidden');
+                nbDiv.classList.add('hidden');
+                aioBtn.className = "px-4 py-2 rounded-md font-medium text-sm bg-telemetry-cyan text-black font-semibold transition flex items-center gap-2";
+                nbBtn.className = "px-4 py-2 rounded-md font-medium text-sm bg-white/5 text-slate-300 hover:text-white transition flex items-center gap-2";
+            } else {
+                nbDiv.classList.remove('hidden');
+                aioDiv.classList.add('hidden');
+                nbBtn.className = "px-4 py-2 rounded-md font-medium text-sm bg-telemetry-cyan text-black font-semibold transition flex items-center gap-2";
+                aioBtn.className = "px-4 py-2 rounded-md font-medium text-sm bg-white/5 text-slate-300 hover:text-white transition flex items-center gap-2";
+            }
+        }
+
+        // Module 3: TOR Spec Simulator Logic
+        function setSimType(type) {
+            currentSimType = type;
+            const btnAio = document.getElementById('sim-btn-aio');
+            const btnNb = document.getElementById('sim-btn-nb');
+            const screenContainer = document.getElementById('sim-screen-container');
+
+            if (type === 'aio') {
+                btnAio.className = "px-3.5 py-1.5 text-xs font-mono font-semibold bg-telemetry-cyan text-black transition";
+                btnNb.className = "px-3.5 py-1.5 text-xs font-mono font-semibold bg-space-900 text-slate-300 hover:text-white transition";
+                screenContainer.classList.add('hidden');
+            } else {
+                btnNb.className = "px-3.5 py-1.5 text-xs font-mono font-semibold bg-telemetry-cyan text-black transition";
+                btnAio.className = "px-3.5 py-1.5 text-xs font-mono font-semibold bg-space-900 text-slate-300 hover:text-white transition";
+                screenContainer.classList.remove('hidden');
+            }
+            calculateSimScore();
+        }
+
+        function loadSimPreset(preset) {
+            if (preset === 'retail_entry') {
+                document.getElementById('sim-cpu').value = 'tier3';
+                document.getElementById('sim-year').value = '2024';
+                document.getElementById('sim-ram').value = '16';
+                document.getElementById('sim-ssd').value = '1000';
+                document.getElementById('sim-screen').value = '15_ips';
+            } else if (preset === 'mid_2025') {
+                document.getElementById('sim-cpu').value = 'tier4';
+                document.getElementById('sim-year').value = '2025';
+                document.getElementById('sim-ram').value = '24';
+                document.getElementById('sim-ssd').value = '1500';
+                document.getElementById('sim-screen').value = '16_ips';
+            } else if (preset === 'flagship_2026') {
+                document.getElementById('sim-cpu').value = 'tier5';
+                document.getElementById('sim-year').value = '2026';
+                document.getElementById('sim-ram').value = '32';
+                document.getElementById('sim-ssd').value = '2000';
+                document.getElementById('sim-screen').value = '16_oled';
+            }
+            calculateSimScore();
+        }
+
+        // Load specific market product directly into Module 3 Simulator
+        function loadMarketProductIntoSimulator(productId) {
+            const product = marketProducts.find(p => p.id === productId);
+            if (!product || !product.simConfig) return;
+
+            switchTab('tab-sim');
+            setSimType(product.simConfig.type);
+            document.getElementById('sim-cpu').value = product.simConfig.cpu;
+            document.getElementById('sim-year').value = product.simConfig.year;
+            document.getElementById('sim-ram').value = product.simConfig.ram;
+            document.getElementById('sim-ssd').value = product.simConfig.ssd;
+            document.getElementById('sim-screen').value = product.simConfig.screen;
+            calculateSimScore();
+        }
+
+        function calculateSimScore() {
+            const cpu = document.getElementById('sim-cpu').value;
+            const year = parseInt(document.getElementById('sim-year').value, 10);
+            const ram = parseInt(document.getElementById('sim-ram').value, 10);
+            const ssd = parseInt(document.getElementById('sim-ssd').value, 10);
+            const screen = document.getElementById('sim-screen').value;
+
+            let score66 = 0;
+            let score69 = 0;
+            let breakdownRows = [];
+            const isBelow8Core = (cpu === 'tier0' || cpu === 'tier1');
+
+            if (currentSimType === 'aio') {
+                // 1. CPU (Weight 10 in both)
+                let cpu66 = 0, cpu69 = 0;
+                if (cpu === 'tier0') { cpu66 = 0; cpu69 = 0; }
+                else if (cpu === 'tier1') { cpu66 = 5; cpu69 = 0; }
+                else if (cpu === 'tier2') { cpu66 = 0; cpu69 = 0; }
+                else if (cpu === 'tier3') { cpu66 = 10; cpu69 = 5; }
+                else if (cpu === 'tier4') { cpu66 = 5; cpu69 = 5; }
+                else if (cpu === 'tier5') { cpu66 = 10; cpu69 = 10; }
+                score66 += cpu66;
+                score69 += cpu69;
+                breakdownRows.push({ label: "1.1 คะแนน CPU (เต็ม 10)", s66: `${cpu66} / 10`, s69: `${cpu69} / 10` });
+
+                // 2. Launch Year (Weight 5 in both)
+                let yr66 = 0, yr69 = 0;
+                if (year === 2022) yr66 = 2.5;
+                else if (year >= 2023) yr66 = 5.0;
+
+                if (year === 2025) yr69 = 2.5;
+                else if (year >= 2026) yr69 = 5.0;
+                score66 += yr66;
+                score69 += yr69;
+                breakdownRows.push({ label: "1.2 ปีที่วางจำหน่าย CPU (เต็ม 5)", s66: `${yr66} / 5`, s69: `${yr69} / 5` });
+
+                // 3. RAM (DE66: N/A, DE69: Weight 10)
+                let ram69 = 0;
+                if (ram === 24) ram69 = 5.0;
+                else if (ram >= 32) ram69 = 10.0;
+                score69 += ram69;
+                breakdownRows.push({ label: "1.3 ขนาดหน่วยความจำ RAM", s66: `ไม่คิดคะแนน`, s69: `${ram69} / 10` });
+
+                // 4. SSD (Weight 5 in both)
+                let ssd66 = 0, ssd69 = 0;
+                if (ssd === 1000) { ssd66 = 2.5; ssd69 = 0; }
+                else if (ssd === 1500) { ssd66 = 2.5; ssd69 = 2.5; }
+                else if (ssd >= 2000) { ssd66 = 5.0; ssd69 = 5.0; }
+                score66 += ssd66;
+                score69 += ssd69;
+                breakdownRows.push({ label: "1.4 ความจุ SSD M.2 NVMe (เต็ม 5)", s66: `${ssd66} / 5`, s69: `${ssd69} / 5` });
+
+            } else {
+                // NOTEBOOK SCORING
+                // 2.1 CPU (Weight 10)
+                let cpu66 = 0, cpu69 = 0;
+                if (cpu === 'tier0') { cpu66 = 0; cpu69 = 0; }
+                else if (cpu === 'tier1') { cpu66 = 5; cpu69 = 0; }
+                else if (cpu === 'tier2') { cpu66 = 0; cpu69 = 0; }
+                else if (cpu === 'tier3') { cpu66 = 5; cpu69 = 5; }
+                else if (cpu === 'tier4') { cpu66 = 5; cpu69 = 5; }
+                else if (cpu === 'tier5') { cpu66 = 10; cpu69 = 10; }
+                score66 += cpu66;
+                score69 += cpu69;
+                breakdownRows.push({ label: "2.1 คะแนน CPU (เต็ม 10)", s66: `${cpu66} / 10`, s69: `${cpu69} / 10` });
+
+                // 2.2 Launch Year (Weight 5)
+                let yr66 = 0, yr69 = 0;
+                if (year === 2022) yr66 = 2.5;
+                else if (year === 2023) yr66 = 4.0;
+                else if (year >= 2024) yr66 = 5.0;
+
+                if (year === 2025) yr69 = 2.5;
+                else if (year >= 2026) yr69 = 5.0;
+                score66 += yr66;
+                score69 += yr69;
+                breakdownRows.push({ label: "2.2 ปีที่วางจำหน่าย CPU (เต็ม 5)", s66: `${yr66} / 5`, s69: `${yr69} / 5` });
+
+                // 2.3 Display (DE66: Weight 2.5, DE69: Weight 5)
+                let disp66 = 0, disp69 = 0;
+                if (screen === '15_ips') { disp66 = 1.25; disp69 = 0; }
+                else if (screen === '16_ips') { disp66 = 2.5; disp69 = 0; }
+                else if (screen === '16_oled') { disp66 = 2.5; disp69 = 5.0; }
+                score66 += disp66;
+                score69 += disp69;
+                breakdownRows.push({ label: "2.3 หน้าจอแสดงผล (2.5 vs 5)", s66: `${disp66} / 2.5`, s69: `${disp69} / 5` });
+
+                // 2.4 SSD (DE66: Weight 2.5, DE69: Weight 5)
+                let ssd66 = 0, ssd69 = 0;
+                if (ssd === 1000) { ssd66 = 1.25; ssd69 = 0; }
+                else if (ssd === 1500) { ssd66 = 1.25; ssd69 = 2.5; }
+                else if (ssd >= 2000) { ssd66 = 2.5; ssd69 = 5.0; }
+                score66 += ssd66;
+                score69 += ssd69;
+                breakdownRows.push({ label: "2.4 ความจุ SSD (2.5 vs 5)", s66: `${ssd66} / 2.5`, s69: `${ssd69} / 5` });
+
+                // 2.5 RAM (DE66: N/A, DE69: Weight 5)
+                let ram69 = 0;
+                if (ram === 24) ram69 = 2.5;
+                else if (ram >= 32) ram69 = 5.0;
+                score69 += ram69;
+                breakdownRows.push({ label: "2.5 ขนาดหน่วยความจำ RAM", s66: `ไม่คิดคะแนน`, s69: `${ram69} / 5` });
+            }
+
+            // Update UI Gauges
+            const pct66 = ((score66 / 20) * 100).toFixed(1);
+            const pct69 = ((score69 / 30) * 100).toFixed(1);
+
+            document.getElementById('sim-score-66').textContent = score66.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('sim-score-69').textContent = score69.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('sim-pct-66').textContent = `${pct66}%`;
+            document.getElementById('sim-pct-69').textContent = `${pct69}%`;
+            document.getElementById('sim-bar-66').style.width = `${pct66}%`;
+            document.getElementById('sim-bar-69').style.width = `${pct69}%`;
+
+            // Render Breakdown
+            const breakdownEl = document.getElementById('sim-breakdown');
+            breakdownEl.innerHTML = breakdownRows.map(r => `
+                <div class="p-2 rounded bg-space-950/90 border border-white/10 flex items-center justify-between">
+                    <span class="text-slate-300">${r.label}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-slate-400">DE66: <strong class="text-white">${r.s66}</strong></span>
+                        <span class="text-telemetry-cyan">DE69: <strong>${r.s69}</strong></span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Executive Verdict message with baseline compliance warnings
+            const verdictEl = document.getElementById('sim-verdict');
+            if (isBelow8Core || ssd === 512) {
+                const reasons = [];
+                if (isBelow8Core) reasons.push("CPU ต่ำกว่า 8 แกนหลัก (8 Core)");
+                if (ssd === 512) reasons.push("ความจุ SSD 512 GB ต่ำกว่าฐานเริ่มต้น 1 TB");
+                verdictEl.className = "p-3.5 rounded-lg bg-telemetry-red/15 border border-telemetry-red/50 text-xs text-slate-200 leading-relaxed";
+                verdictEl.innerHTML = `<strong class="text-telemetry-red font-mono uppercase">COMPLIANCE ALERT // ต่ำกว่าเกณฑ์ขั้นต่ำ DE 2569:</strong> พบจุดไม่ผ่านฐานตารางคะแนนปี 2569 ได้แก่ <strong>${reasons.join(' และ ')}</strong> แนะนำให้เลือก CPU ≥ 8 Core และ SSD ≥ 1 TB`;
+            } else if (score69 >= 22.5) {
+                verdictEl.className = "p-3.5 rounded-lg bg-telemetry-green/15 border border-telemetry-green/50 text-xs text-slate-200 leading-relaxed";
+                verdictEl.innerHTML = `<strong class="text-telemetry-green font-mono uppercase">OPTIMAL TOR SPEC // สเปคระดับชนะประมูล:</strong> สเปคนี้ทำคะแนนในเกณฑ์ใหม่ DE 69 ได้สูงถึง <strong>${score69}/30 คะแนน (${pct69}%)</strong> เหมาะสำหรับใช้เป็นเกณฑ์คัดเลือกผู้เสนอราคาที่ให้สเปคคุ้มค่างบประมาณที่สุด`;
+            } else {
+                verdictEl.className = "p-3.5 rounded-lg bg-telemetry-amber/10 border border-telemetry-amber/40 text-xs text-slate-200 leading-relaxed";
+                verdictEl.innerHTML = `<strong class="text-telemetry-amber font-mono uppercase">TELEMETRY ANALYSIS:</strong> สเปคนี้เคยได้ถึง <strong>${pct66}%</strong> ในเกณฑ์ปี 66 แต่เมื่อคำนวณตามเกณฑ์ปี 69 จะเหลือเพียง <strong>${pct69}% (${score69}/30 คะแนน)</strong> หากต้องการเพิ่มคะแนน แนะนำให้เพิ่ม RAM เป็น 32GB หรือเลือก CPU ปี 2025-2026`;
+            }
+        }
+
+        // Module 4: Render Market Benchmark Cards
+        function renderMarketCards(filter = 'all') {
+            const grid = document.getElementById('market-cards-grid');
+            grid.innerHTML = '';
+
+            // Update filter buttons
+            ['all', 'aio', 'nb'].forEach(key => {
+                const btn = document.getElementById(`mkt-btn-${key}`);
+                if (key === filter) {
+                    btn.className = "px-3 py-1.5 rounded text-xs font-mono bg-telemetry-cyan text-black font-semibold";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded text-xs font-mono bg-white/5 text-slate-300 hover:text-white";
+                }
+            });
+
+            const filtered = filter === 'all' ? marketProducts : marketProducts.filter(p => p.category === filter);
+
+            filtered.forEach(item => {
+                const priceDiff = item.marketPrice - item.budgetCeiling;
+                let statusBadge = '';
+                if (item.status === 'IN_BUDGET') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-telemetry-green/15 text-telemetry-green border border-telemetry-green/40 font-mono text-[11px]">อยู่ในงบราคากลาง (${formatNumber(priceDiff)}฿)</span>`;
+                } else if (item.status === 'RECOMMENDED') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-telemetry-cyan/20 text-telemetry-cyan border border-telemetry-cyan/50 font-mono text-[11px] font-bold">แนะนำจัดซื้อแบบ B2B CTO</span>`;
+                } else if (item.status === 'BORDERLINE') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-telemetry-amber/15 text-telemetry-amber border border-telemetry-amber/40 font-mono text-[11px]">ราคาปลีกปริ่มงบ (+${formatNumber(priceDiff)}฿)</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-telemetry-red/15 text-telemetry-red border border-telemetry-red/40 font-mono text-[11px]">ราคาปลีกเกินงบ (+${formatNumber(priceDiff)}฿)</span>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="spacex-card corner-reticle rounded-lg p-5 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-mono text-[11px] text-slate-400 uppercase">${item.catLabel}</span>
+                                ${statusBadge}
+                            </div>
+                            <h3 class="text-base font-bold text-white mt-2">${item.brand} ${item.model}</h3>
+                            <div class="text-xs text-telemetry-cyan font-mono mt-0.5">แหล่งอ้างอิง: ${item.retailer}</div>
+
+                            <!-- Price Bar -->
+                            <div class="mt-3 p-3 rounded bg-space-950 border border-white/10 flex items-center justify-between">
+                                <div>
+                                    <div class="text-[11px] text-slate-400">ราคาตลาด (ประมาณการ)</div>
+                                    <div class="font-mono text-lg font-bold text-white">${formatNumber(item.marketPrice)} บาท</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[11px] text-slate-400">คะแนนเกณฑ์ DE 69</div>
+                                    <div class="font-mono text-lg font-bold text-telemetry-cyan">${item.score69} <span class="text-xs text-slate-400">/ 30</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Technical Specs List -->
+                            <ul class="mt-3 space-y-1.5 text-xs text-slate-300">
+                                <li><strong class="text-white">CPU:</strong> ${item.specs.cpu}</li>
+                                <li><strong class="text-white">Launch:</strong> ${item.specs.launch}</li>
+                                <li><strong class="text-white">RAM / SSD:</strong> ${item.specs.ram} / ${item.specs.ssd}</li>
+                                <li><strong class="text-white">Display:</strong> ${item.specs.display}</li>
+                            </ul>
+                        </div>
+
+                        <div class="pt-3 border-t border-white/10 space-y-2.5">
+                            <div class="font-mono text-[11px] text-telemetry-amber">${item.scoreBreakdown69}</div>
+                            <p class="text-xs text-slate-400 leading-relaxed">${item.insight}</p>
+                            <button onclick="loadMarketProductIntoSimulator('${item.id}')" class="w-full py-2 px-3 rounded bg-telemetry-cyan/15 hover:bg-telemetry-cyan/25 border border-telemetry-cyan/40 text-telemetry-cyan font-mono text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                                <span>จำลองคะแนนรุ่นนี้ใน Simulator (Load into Simulator) →</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterMarket(cat) {
+            renderMarketCards(cat);
+        }
+
+        // Modal Handlers
+        function openExecutiveBriefModal() {
+            document.getElementById('exec-modal').classList.remove('hidden');
+        }
+        function closeExecutiveBriefModal() {
+            document.getElementById('exec-modal').classList.add('hidden');
+        }
+
+        // Initialize Dashboard on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setTheme(currentTheme);
+            renderPriceMatrix();
+            calculateSimScore();
+            renderMarketCards('all');
+        });
+    </script>
+</body>
+</html>
